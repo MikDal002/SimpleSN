@@ -1,4 +1,8 @@
-﻿using SimpleSN.Core;
+﻿using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
+using Reactive.Bindings.Notifiers;
+using SimpleSN.Core;
+using Syncfusion.Windows.Tools.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,9 +11,13 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace SimpleSN.GUI
 {
@@ -26,7 +34,7 @@ namespace SimpleSN.GUI
 
         public static implicit operator NeuronDto(Neuron neuron)
         {
-            var newDto =  new NeuronDto
+            var newDto = new NeuronDto
             {
                 Weights = new List<double>(),
                 Name = neuron.Name
@@ -47,16 +55,33 @@ namespace SimpleSN.GUI
             GenerationNumber = generationNumber;
         }
     }
-
-    public class MainWindowViewModel : INotifyPropertyChanged
+    public abstract class ViewModelBase : INotifyPropertyChanged, IDisposable
     {
-        private int _generetionCount = 0;
+        protected CompositeDisposable Disposables { get; } = new CompositeDisposable();
+
+        public void Dispose() => Disposables.Dispose();
+
+
+        public void UpdateFieldAndNotify<T>(ref T fieldToUpdate, T value, [CallerMemberName] string callerName = "")
+        {
+            if (Equals(fieldToUpdate, value)) return;
+
+            fieldToUpdate = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(callerName));
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+    }
+
+    public class MainWindowViewModel : ViewModelBase
+    {
         private int _visibleGeneration;
         private int tiredness;
         private int _repeatLearningDataAmount;
         private int _neuronAmount;
+        private bool _generateNewNeurons = true;
         private double _learningImpact;
-        RelayCommand _start;
+        private double _agingFactor;
         RelayCommand _regenarateTrainData;
         private List<Point> _dataPoints = new List<Point>();
         private readonly DataGenerator _generator;
@@ -67,14 +92,19 @@ namespace SimpleSN.GUI
         public ObservableCollection<PointF> VisibleNeurons { get; } = new ObservableCollection<PointF>();
 
         public List<Generation> Generations { get; } = new List<Generation>();
-        public int GenerationCount { get => _generetionCount; set => UpdateFieldAndNotify(ref _generetionCount, value); }
+        public ReactivePropertySlim<int> GenerationCount { get; }
+        public BusyNotifier IsStillWorking { get; }
+
         public int VisibleGeneration { get => _visibleGeneration; set => UpdateFieldAndNotify(ref _visibleGeneration, value); }
         public int Tiredness { get => tiredness; set => UpdateFieldAndNotify(ref tiredness, value); }
         public int RepeatLearningDataAmount { get => _repeatLearningDataAmount; set => UpdateFieldAndNotify(ref _repeatLearningDataAmount, value); }
         public int NeuronAmount { get => _neuronAmount; set => UpdateFieldAndNotify(ref _neuronAmount, value); }
+        public bool GenerateNewNeurons { get => _generateNewNeurons; set => UpdateFieldAndNotify(ref _generateNewNeurons, value); }
         public double LearningImpact { get => _learningImpact; set => UpdateFieldAndNotify(ref _learningImpact, value); }
+        public double AgingFactor { get => _agingFactor; set => UpdateFieldAndNotify(ref _agingFactor, value); }
 
         // To use this class within your viewmodel class:
+        public ReactiveCommand Start { get; }
         public ICommand RegenarateTrainData
         {
             get
@@ -87,35 +117,31 @@ namespace SimpleSN.GUI
                 return _regenarateTrainData;
             }
         }
-        public ICommand Start
-        {
-            get
-            {
-                if (_start == null)
-                {
-                    _start = new RelayCommand(_ => this.StartLearining(),
-                        _ => true);
-                }
-                return _start;
-            }
-        }
 
         public MainWindowViewModel()
         {
             _generator = new DataGenerator();
+
+            GenerationCount = new ReactivePropertySlim<int>(0).AddTo(Disposables);
+            IsStillWorking = new BusyNotifier();
+            Start = new ReactiveCommand(IsStillWorking.Select(d => !d))
+                .WithSubscribe(async () =>
+            {
+                await StartLearining();
+            }).AddTo(Disposables);
 
             trainer = new Trainer();
             //trainer.IteractionStarting += (sender, trainer) => Debug.WriteLine($"Iteration {trainer.Iteration} started…");
             trainer.IteractionWinner += (sender, winner) =>
             {
                 Generations.Add(new Generation(trainer.Neurons.Select(d => (NeuronDto)d), trainer.Iteration));
+                GenerationCount.Value = trainer.Iteration;
 
                 //Debug.WriteLine($"Iteration won: {winner}");
             };
             trainer.TrainingFinished += (sender, trainer) =>
             {
                 Debug.WriteLine($"Training finished in {trainer.Iteration} iterations");
-                GenerationCount = trainer.Iteration;
                 // Debug.WriteLine("All vectors after learning:");
                 // trainer.Neurons.ForEach(d => Debug.WriteLine(d.ToString()));
             };
@@ -128,21 +154,42 @@ namespace SimpleSN.GUI
             DataPoints = _generator.Generate(10, 50, 1000, new Point(0, 0), new Point(1000, 1000)).ToList();
         }
 
-        private void StartLearining()
+        private async Task StartLearining()
         {
             if (DataPoints.Count == 0) GenerateTrainSet();
-            Generations.Clear();
-            GenerationCount = 0;
+            GenerationCount.Value = 0;
             VisibleGeneration = 0;
-            Task.Run(() =>
+
+            using var _ = IsStillWorking.ProcessStart();
+            await Task.Run(() =>
             {
-                var neurons = NeuronFactory.GenerateNeurons(NeuronAmount, 2, learningImpact: LearningImpact, tiredness: Tiredness, minValueOfWeight: 0, maxValueOfWeights: 1000);
-                List<double[]> rawData = DataPoints.Select(d => new[] { (double)d.X, (double)d.Y }).ToList();
-                var toLearn = new List<double[]>();
-                foreach (var _ in Enumerable.Range(0, RepeatLearningDataAmount)) toLearn.AddRange(rawData);
-                Debug.WriteLine($"Amount: {toLearn.Count}");
-                trainer.Train(neurons, (IEnumerable<IEnumerable<double>>)toLearn);
+                try
+                {
+                    List<Neuron> neurons = null;
+                    if (GenerateNewNeurons || Generations.Count == 0)
+                    {
+                        neurons = NeuronFactory.GenerateNeurons(NeuronAmount, 2, learningImpact: LearningImpact, tiredness: Tiredness, minValueOfWeight: 0, maxValueOfWeights: 1000, agingFactor: AgingFactor).ToList();
+                    }
+                    else
+                    {
+                        neurons = NeuronFactory.FromVectors(Generations.ElementAt(0).Neurons.Select(d => d.Weights), learningImpact: LearningImpact, tiredness: Tiredness, agingFactor: AgingFactor).ToList();
+                    }
+
+                    Generations.Clear();
+                    Generations.Add(new Generation(neurons.Select(d => (NeuronDto)d), 0));
+
+                    List<double[]> rawData = DataPoints.Select(d => new[] { (double)d.X, (double)d.Y }).ToList();
+                    var toLearn = new List<double[]>();
+                    foreach (var _ in Enumerable.Range(0, RepeatLearningDataAmount)) toLearn.AddRange(rawData);
+                    Debug.WriteLine($"Amount: {toLearn.Count}");
+                    trainer.Train(neurons, (IEnumerable<IEnumerable<double>>)toLearn);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                }
             });
+
         }
 
         private void MainWindowViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -152,21 +199,11 @@ namespace SimpleSN.GUI
                 VisibleNeurons.Clear();
                 if (Generations.Count == 0) return;
                 var generationToShow = Generations.FirstOrDefault(d => d.GenerationNumber == VisibleGeneration);
-                if (generationToShow == null) return;
+                // if (generationToShow == null) return;
                 foreach (var neuron in generationToShow.Neurons)
                     VisibleNeurons.Add(neuron.ToPointF());
             }
         }
-
-        public void UpdateFieldAndNotify<T>(ref T fieldToUpdate, T value, [CallerMemberName] string callerName = "")
-        {
-            if (Equals(fieldToUpdate, value)) return;
-
-            fieldToUpdate = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(callerName));
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 
     public class RelayCommand : ICommand

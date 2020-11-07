@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="Ninject" Version="3.3.4" />
+    <PackageReference Include="ReactiveProperty" Version="7.5.1" />
+    <PackageReference Include="ReactiveProperty.WPF" Version="7.5.1" />
     <PackageReference Include="Syncfusion.SfChart.WPF" Version="18.3.0.47" />
     <PackageReference Include="Syncfusion.SfInput.WPF" Version="18.3.0.47" />
     <PackageReference Include="Syncfusion.Shared.WPF" Version="18.3.0.47" />

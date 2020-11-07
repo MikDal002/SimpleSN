@@ -5,11 +5,11 @@ namespace SimpleSN.Core
 {
     public class NeuronFactory
     {
-        public static IEnumerable<Neuron> GenerateNeurons(int numberOfNeurons, int numberOfDendryds, int tiredness = 0, double learningImpact = 0.5, double minValueOfWeight = double.MinValue, double maxValueOfWeights = double.MaxValue)
+        public static IEnumerable<Neuron> GenerateNeurons(int numberOfNeurons, int numberOfDendryds, int tiredness = 0, double learningImpact = 0.5, double minValueOfWeight = double.MinValue, double maxValueOfWeights = double.MaxValue, double agingFactor = 0.0)
         {
             var rnd = new Random();
             for (int i = 0; i < numberOfNeurons; i++)
-                yield return new Neuron(rnd.GetManyNextDoubleFromRange(numberOfDendryds, minValueOfWeight, maxValueOfWeights), learningImpact, tiredness);
+                yield return new Neuron(rnd.GetManyNextDoubleFromRange(numberOfDendryds, minValueOfWeight, maxValueOfWeights), learningImpact, tiredness, agingFactor);
         }
         public static IEnumerable<Neuron> GetFromLab1(int tiredness = 0)
         {
@@ -21,6 +21,14 @@ namespace SimpleSN.Core
 
             foreach (var vector in matrix)
                 yield return new Neuron(vector, learningImpact, tiredness) { Name = $"Neuron {++i}" };
+        }
+
+
+        public static IEnumerable<Neuron> FromVectors(IEnumerable<List<double>> enumerable, double learningImpact, int tiredness, double agingFactor = 0.0)
+        {
+            int i = 0;
+            foreach (var vector in enumerable)
+                yield return new Neuron(vector, learningImpact, tiredness, agingFactor) { Name = $"Nr {++i}" };
         }
     }
 
