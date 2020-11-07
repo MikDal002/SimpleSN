@@ -14,7 +14,7 @@ namespace SimpleSN.Core
         public event EventHandler<Neuron> IteractionWinner;
         public event EventHandler<Trainer> TrainingFinished;
 
-        public double Iteration { get; private set; }
+        public int Iteration { get; private set; }
 
         public Trainer()
         {

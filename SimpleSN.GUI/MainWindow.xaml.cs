@@ -20,9 +20,26 @@ namespace SimpleSN.GUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+
+        public MainWindow(MainWindowViewModel viewModel)
         {
+            DataContext = viewModel;
+            viewModel.PropertyChanged += ViewModel_PropertyChanged;
             InitializeComponent();
+
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainWindowViewModel.GenerationCount))
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    Slider.TickFrequency = (DataContext as MainWindowViewModel).GenerationCount / 10;
+                });
+                
+            }
+            //throw new NotImplementedException();
         }
     }
 }

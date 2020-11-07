@@ -6,4 +6,15 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Ninject" Version="3.3.4" />
+    <PackageReference Include="Syncfusion.SfChart.WPF" Version="18.3.0.47" />
+    <PackageReference Include="Syncfusion.SfInput.WPF" Version="18.3.0.47" />
+    <PackageReference Include="Syncfusion.Shared.WPF" Version="18.3.0.47" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleSN.Core\SimpleSN.Core.csproj" />
+  </ItemGroup>
+
 </Project>
