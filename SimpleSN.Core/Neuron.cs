@@ -11,11 +11,11 @@ namespace SimpleSN.Core
         #endregion
 
         private int _cycleLeftToBeNotTired = 0;
+        private int _age = 0;
 
         public string Name { get; set; } = string.Empty;
         public int CyclesNeededToBeNotTired { get; private set; }
         public double AgingFactor { get; private set; } = 0;
-        public int _age = 0;
         public double LastFitness
         {
             get => _lastFitness == null ? throw new Exception("Nie dokonano obliczeń także nie ma wartości!") : _lastFitness.Value;
