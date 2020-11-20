@@ -25,26 +25,10 @@ namespace SimpleSN.GUI
     public partial class MainWindow : Window
     {
 
-        public MainWindow(MainWindowViewModel viewModel)
+        public MainWindow(ArtNetworkPage nrs)
         {
-            DataContext = viewModel;
             InitializeComponent();
-            this.Loaded += MainWindow_Initialized;
-
-        }
-
-        private void MainWindow_Initialized(object sender, EventArgs e)
-        {
-            (DataContext as MainWindowViewModel).GenerationCount
-                //.SubscribeOnUIDispatcher()
-                .Buffer(TimeSpan.FromMilliseconds(10))
-                .Where(d=> d.Count > 0)
-                .Select(d => d.Last())
-                .Subscribe((value) =>
-            {
-                Dispatcher.Invoke(() =>
-                Slider.TickFrequency = value / 10);
-            });
+            Content = nrs;
         }
     }
 }

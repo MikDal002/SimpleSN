@@ -5,11 +5,16 @@ namespace SimpleSN.Core
 {
     public class NeuronFactory
     {
-        public static IEnumerable<Neuron> GenerateNeurons(int numberOfNeurons, int numberOfDendryds, int tiredness = 0, double learningImpact = 0.5, double minValueOfWeight = double.MinValue, double maxValueOfWeights = double.MaxValue, double agingFactor = 0.0)
+        public static IEnumerable<Neuron> GenerateNeurons(int numberOfNeurons, int numberOfDendryds, int tiredness = 0, double learningImpact = 0.5, double minValueOfWeight = double.MinValue, double maxValueOfWeights = double.MaxValue, double agingFactor = 0.0,
+            Func<WeightVectorPair, double>? fitnessFunction = null)
         {
             var rnd = new Random();
             for (int i = 0; i < numberOfNeurons; i++)
-                yield return new Neuron(rnd.GetManyNextDoubleFromRange(numberOfDendryds, minValueOfWeight, maxValueOfWeights), learningImpact, tiredness, agingFactor);
+            {
+                var nr = new Neuron(rnd.GetManyNextDoubleFromRange(numberOfDendryds, minValueOfWeight, maxValueOfWeights), learningImpact, tiredness, agingFactor);
+                if (fitnessFunction != null) nr.FitnessFunction = fitnessFunction;
+                yield return nr;
+            }
         }
         public static IEnumerable<Neuron> GetFromLab1(int tiredness = 0)
         {

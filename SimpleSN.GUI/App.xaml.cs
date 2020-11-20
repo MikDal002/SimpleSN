@@ -16,7 +16,9 @@ namespace SimpleSN.GUI
         {
             //Set up ninject bindings here.
             Bind<MainWindow>().ToSelf();
-            Bind<MainWindowViewModel>().ToSelf();
+            Bind<SimpleNeuronsViewModel>().ToSelf();
+            Bind<ArtNetworkPageViewModel>().ToSelf();
+            Bind<ArtNetworkPage>().ToSelf();
         }
     }
     /// <summary>

@@ -1,9 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace SimpleSN.Core
 {
+    public struct WeightVectorPair
+    {
+        public double Weight { get; }
+        public double VectorEl { get; }
+
+        public WeightVectorPair(double weight, double vectorEl) : this()
+        {
+            Weight = weight;
+            VectorEl = vectorEl;
+        }
+
+    }
     public class Neuron : IComparable<Neuron>
     {
         #region backend of properties
@@ -14,6 +27,7 @@ namespace SimpleSN.Core
         private int _age = 0;
 
         public string Name { get; set; } = string.Empty;
+        public Func<WeightVectorPair, double> FitnessFunction { get; set; } = (pair) => Math.Pow(pair.VectorEl - pair.Weight, 2);
         public int CyclesNeededToBeNotTired { get; private set; }
         public double AgingFactor { get; private set; } = 0;
         public double LastFitness
@@ -37,6 +51,7 @@ namespace SimpleSN.Core
 
         public double FitnessForVector(IEnumerable<double> vector)
         {
+            Debug.Assert(FitnessFunction != null);
             if (IsTired)
             {
                 _cycleLeftToBeNotTired -= 1;
@@ -48,7 +63,7 @@ namespace SimpleSN.Core
             LastFitness = 0;
             for (int i = 0; i < LastVector.Count; i++)
             {
-                LastFitness += Math.Pow(LastVector[i] - Weights[i], 2);
+                LastFitness += FitnessFunction(new WeightVectorPair(Weights[i], LastVector[i]));
             }
             LastFitness = AgingFactor < 0.0001 ? LastFitness : LastFitness * ((1 + AgingFactor) * _age);
             return LastFitness;

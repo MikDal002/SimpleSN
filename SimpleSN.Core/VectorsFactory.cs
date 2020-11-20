@@ -14,6 +14,8 @@ namespace SimpleSN.Core
             yield return new[] { 0.5, 0.3, 0.2, 0.7 };
         }
 
+
+
         internal static IEnumerable<double[]> FromFile(string fileName, string separator = ",", bool skipFirstLine = true)
         {
             using var openStream = System.IO.File.OpenRead(fileName);

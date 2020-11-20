@@ -73,7 +73,7 @@ namespace SimpleSN.GUI
         public event PropertyChangedEventHandler PropertyChanged;
     }
 
-    public class MainWindowViewModel : ViewModelBase
+    public class SimpleNeuronsViewModel : ViewModelBase
     {
         private int _visibleGeneration;
         private int tiredness;
@@ -118,7 +118,7 @@ namespace SimpleSN.GUI
             }
         }
 
-        public MainWindowViewModel()
+        public SimpleNeuronsViewModel()
         {
             _generator = new DataGenerator();
 

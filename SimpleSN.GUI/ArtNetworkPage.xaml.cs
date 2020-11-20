@@ -1,6 +1,7 @@
 ﻿using SimpleSN.Core;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -36,18 +37,16 @@ namespace SimpleSN.GUI
             var requestedFeatures = 40;
             // Ilośc neuronów na poziomie wejścia
             var numberOfInputNeurons = 80;
-            var inputNeurons = new List<Neuron>();
-            for(int no = 0; no < numberOfInputNeurons; ++no)
-            {
-                int size = (int)(sizeOfImage.Height * sizeOfImage.Width);
-                var weightsOfNeuron = new double[size];
-                var rnd = new Random();
-                for(int i = 0; i < size; i++)
-                {
-                    weightsOfNeuron[i] = rnd.NextDouble();
-                }
-                inputNeurons.Add(new Neuron(weightsOfNeuron, 0.1));
-            }
+            
+            // Tworzę dwie warstwy neuronów
+            
+            var inputNeurons = NeuronFactory.GenerateNeurons(numberOfInputNeurons, (int)(sizeOfImage.Height * sizeOfImage.Width), 
+                minValueOfWeight: 1, maxValueOfWeights: 1,
+                learningImpact: 0.1).ToList();
+            var outNeurons = NeuronFactory.GenerateNeurons(requestedFeatures, inputNeurons.Count, learningImpact: 0.1, 
+                fitnessFunction: (pair) => pair.Weight * pair.VectorEl);
+
+
         }
     }
 }
