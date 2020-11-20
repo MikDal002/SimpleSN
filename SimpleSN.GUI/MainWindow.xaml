@@ -1,29 +1,27 @@
 ﻿<Window x:Class="SimpleSN.GUI.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:chart="http://schemas.syncfusion.com/wpf" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib" xmlns:local="clr-namespace:SimpleSN.GUI" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Title="MainWindow" Width="800"
         Height="450" mc:Ignorable="d">
-    <DockPanel Margin="5">
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-            <GroupBox Header="Neurony">
-                <StackPanel Orientation="Horizontal">
+    <chart:DockingManager Margin="5" UseDocumentContainer="True" >
 
-                    <GroupBox Header="Ilość neuronów">
-                        <chart:UpDown MinValue="1" Step="1" Value="{Binding NeuronAmount}" />
-                    </GroupBox>
-                    <GroupBox Header="Zmęczenie">
-                        <chart:UpDown MinValue="0" Step="1" Value="{Binding Tiredness}" />
-                    </GroupBox>
-                    <GroupBox Header="Starzenie">
-                        <chart:UpDown MaxValue="1" MinValue="0" Step="0.01" Value="{Binding AgingFactor}" />
-                    </GroupBox>
-                    <GroupBox Header="Wpływ nauczania">
-                        <chart:UpDown MaxValue="1" MinValue="0" Step="0.01" Value="{Binding LearningImpact}" />
-                    </GroupBox>
-                    <GroupBox Header="Powtórz dane wejściowe">
-                        <chart:UpDown MinValue="1" Step="1" Value="{Binding RepeatLearningDataAmount}" />
-                    </GroupBox>
-                    <CheckBox VerticalAlignment="Center" Content="Generuj nowe neurony" IsChecked="{Binding GenerateNewNeurons}" />
-                </StackPanel>
+        <WrapPanel chart:DockingManager.Header="Neurony" chart:DockingManager.CanClose="False">
+
+            <GroupBox Header="Ilość neuronów">
+                <chart:UpDown MinValue="1" Step="1" Value="{Binding NeuronAmount}" />
             </GroupBox>
+            <GroupBox Header="Zmęczenie">
+                <chart:UpDown MinValue="0" Step="1" Value="{Binding Tiredness}" />
+            </GroupBox>
+            <GroupBox Header="Starzenie">
+                <chart:UpDown MaxValue="1" MinValue="0" Step="0.01" Value="{Binding AgingFactor}" />
+            </GroupBox>
+            <GroupBox Header="Wpływ nauczania">
+                <chart:UpDown MaxValue="1" MinValue="0" Step="0.01" Value="{Binding LearningImpact}" />
+            </GroupBox>
+            <GroupBox Header="Powtórz dane wejściowe">
+                <chart:UpDown MinValue="1" Step="1" Value="{Binding RepeatLearningDataAmount}" />
+            </GroupBox>
+            <CheckBox VerticalAlignment="Center" Content="Generuj nowe neurony" IsChecked="{Binding GenerateNewNeurons}" />
+
             <Button Margin="2" Padding="5,2" VerticalAlignment="Center"
                     Command="{Binding Start}"
                     Content="Start" />
@@ -31,8 +29,11 @@
             <Button Margin="2" Padding="5,2" VerticalAlignment="Center"
                     Command="{Binding RegenarateTrainData}"
                     Content="Generuj ponownie zestaw danych" />
-        </StackPanel>
-        <DockPanel DockPanel.Dock="Bottom">
+        </WrapPanel>
+
+        <DockPanel DockPanel.Dock="Bottom"  chart:DockingManager.State="Document" chart:DockingManager.Header="Wykres" chart:DockingManager.CanClose="False">
+            <DockPanel DockPanel.Dock="Bottom">
+                
             <chart:UpDown DockPanel.Dock="Right" EnableRangeAdorner="True"
                           MaxValue="{Binding GenerationCount.Value}"
                           MinValue="0" RangeAdornerBackground="Gray"
@@ -41,8 +42,8 @@
                                  Maximum="{Binding GenerationCount.Value}"
                                  Minimum="0" TickFrequency="1000" TickPlacement="Inline" ToolTipFormat="N"
                                  Value="{Binding VisibleGeneration}" />
-        </DockPanel>
-        <chart:SfChart DockPanel.Dock="Top" Header="Chart">
+            </DockPanel>
+        <chart:SfChart DockPanel.Dock="Top" Header="Chart" Margin="5">
             <!--  Initialize the horizontal axis for SfChart  -->
             <chart:SfChart.PrimaryAxis>
                 <chart:NumericalAxis FontSize="14" Header="" />
@@ -60,6 +61,7 @@
             <chart:ScatterSeries Interior="Red" ItemsSource="{Binding VisibleNeurons}" XBindingPath="X" YBindingPath="Y" />
 
         </chart:SfChart>
+        </DockPanel>
 
-    </DockPanel>
+    </chart:DockingManager>
 </Window>
