@@ -4,31 +4,40 @@ using System.Linq;
 
 namespace SimpleSN.Core
 {
-    public class Trainer
+    public class AbstractTrainer
+    {
+        public int Iteration { get; protected set; }
+
+        public event EventHandler<AbstractTrainer> IteractionStarting;
+        public event EventHandler<AbstractTrainer> IteractionFinished;
+        public event EventHandler<Neuron> IteractionWinner;
+        public event EventHandler<AbstractTrainer> TrainingFinished;
+
+        protected void InvokeInteractionWinner(Neuron neuron) => IteractionWinner?.Invoke(this, neuron);
+        protected void InvokeTrainingFinished() => TrainingFinished?.Invoke(this, this);
+        protected void InvokeInteractionFinished() => IteractionFinished?.Invoke(this, this);
+        protected void InvokeInteractionStarting() => IteractionStarting?.Invoke(this, this);
+    }
+    public class TrainArtNetwork
+    {
+        public void Train(IEnumerable<Neuron> inputNeurons, IEnumerable<Neuron> outputNeurons)
+        {
+
+        }
+    }
+    public class Trainer : AbstractTrainer
     {
         public List<Neuron> Neurons { get; private set; }
         private List<List<double>> LearningVectors;
 
-        public event EventHandler<Trainer> IteractionStarting;
-        public event EventHandler<Trainer> IteractionFinished;
-        public event EventHandler<Neuron> IteractionWinner;
-        public event EventHandler<Trainer> TrainingFinished;
-
-        public int Iteration { get; private set; }
-
-        public Trainer()
+        public void Train(IEnumerable<Neuron> neurons, IEnumerable<IEnumerable<double>> learningVectors)
         {
-
-        }
-
-        public void Train(IEnumerable<Neuron> _neurons, IEnumerable<IEnumerable<double>> _learningVectors)
-        {
-            PrepareData(_neurons, _learningVectors);
+            PrepareData(neurons, learningVectors);
             Iteration = 0;
             foreach (var learningVector in LearningVectors)
             {
                 Iteration += 1;
-                IteractionStarting?.Invoke(this, this);
+                InvokeInteractionStarting();
                 Neurons.ForEach(d => d.FitnessForVector(learningVector));
                 var theBestNeurone = Neurons.Where(d => !d.IsTired).Min();
 
@@ -36,10 +45,10 @@ namespace SimpleSN.Core
                 if (theBestNeurone == null) continue;
                 else theBestNeurone.Retrain();
 
-                IteractionWinner?.Invoke(this, theBestNeurone);
-                IteractionFinished?.Invoke(this, this);
+                InvokeInteractionWinner(theBestNeurone);
+                InvokeInteractionFinished();
             }
-            TrainingFinished?.Invoke(this, this);
+            InvokeTrainingFinished();
         }
 
         private void PrepareData(IEnumerable<Neuron> _neurons, IEnumerable<IEnumerable<double>> _learningVectors)

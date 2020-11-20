@@ -39,13 +39,18 @@ namespace SimpleSN.GUI
             var numberOfInputNeurons = 80;
             
             // Tworzę dwie warstwy neuronów
-            
             var inputNeurons = NeuronFactory.GenerateNeurons(numberOfInputNeurons, (int)(sizeOfImage.Height * sizeOfImage.Width), 
                 minValueOfWeight: 1, maxValueOfWeights: 1,
                 learningImpact: 0.1).ToList();
+
+            // To jest wektor wyjściowy dolnej warstwy
+            var y_d = inputNeurons.Select(d => d.LastFitness);
+
             var outNeurons = NeuronFactory.GenerateNeurons(requestedFeatures, inputNeurons.Count, learningImpact: 0.1, 
                 fitnessFunction: (pair) => pair.Weight * pair.VectorEl);
 
+            // to jest wektor wyjściowy górnej warstwy 
+            var y_g = outNeurons.Select(d => d.LastFitness);
 
         }
     }
