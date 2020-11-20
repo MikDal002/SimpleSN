@@ -198,7 +198,7 @@ namespace SimpleSN.GUI
             {
                 VisibleNeurons.Clear();
                 if (Generations.Count == 0) return;
-                var generationToShow = Generations.FirstOrDefault(d => d.GenerationNumber == VisibleGeneration);
+                var generationToShow = Generations[VisibleGeneration];//.FirstOrDefault(d => d.GenerationNumber == VisibleGeneration);
                 // if (generationToShow == null) return;
                 foreach (var neuron in generationToShow.Neurons)
                     VisibleNeurons.Add(neuron.ToPointF());
