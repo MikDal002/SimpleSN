@@ -32,25 +32,23 @@ namespace SimpleSN.GUI
         public ArtNetworkPageViewModel()
         {
             // Określa rozmiar obrazu, będzie rzutowana do wartości całkowitych
-            var sizeOfImage = new Size(20, 20);
+            var sizeOfImage = new System.Drawing.Size(20, 20);
             // Określa ilość cech które chcemy wyłuskać z obrazu (ilość neuronów na pozoiomie wyjścia
             var requestedFeatures = 40;
-            // Ilośc neuronów na poziomie wejścia
-            var numberOfInputNeurons = 80;
             
             // Tworzę dwie warstwy neuronów
-            var inputNeurons = NeuronFactory.GenerateNeurons(numberOfInputNeurons, (int)(sizeOfImage.Height * sizeOfImage.Width), 
+            var inputNeurons = NeuronFactory.GenerateNeurons(sizeOfImage.GetArea(), sizeOfImage.GetArea(), 
                 minValueOfWeight: 1, maxValueOfWeights: 1,
                 learningImpact: 0.1).ToList();
 
             // To jest wektor wyjściowy dolnej warstwy
-            var y_d = inputNeurons.Select(d => d.LastFitness);
+            var y_d = inputNeurons.Select(d => d.LastFitness).ToList().TheBiggestValueThreatAsOneOthersAsZeros();
 
             var outNeurons = NeuronFactory.GenerateNeurons(requestedFeatures, inputNeurons.Count, learningImpact: 0.1, 
                 fitnessFunction: (pair) => pair.Weight * pair.VectorEl);
 
             // to jest wektor wyjściowy górnej warstwy 
-            var y_g = outNeurons.Select(d => d.LastFitness);
+            var y_g = outNeurons.Select(d => d.LastFitness).ToList().TheBiggestValueThreatAsOneOthersAsZeros();
 
         }
     }

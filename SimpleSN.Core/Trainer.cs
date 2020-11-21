@@ -22,7 +22,7 @@ namespace SimpleSN.Core
     {
         public void Train(IEnumerable<Neuron> inputNeurons, IEnumerable<Neuron> outputNeurons)
         {
-
+            
         }
     }
     public class Trainer : AbstractTrainer
