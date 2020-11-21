@@ -17,6 +17,15 @@ namespace SimpleSN.Core
             return enumerable.Select(d => d.ToString()).Aggregate((left, right) => left + "; " + right);
         }
 
+        public static IEnumerable<double> MultiplyEachElementWith(this ICollection<double> leftList, ICollection<double> rightList)
+        {
+            if (leftList.Count != rightList.Count) throw new InvalidOperationException("Cannot sum two vectors with different length");
+            for(int i = 0; i < leftList.Count; ++i)
+            {
+                yield return leftList.ElementAt(i) * rightList.ElementAt(i);
+            }
+        }
+
         public static int GetArea(this Size size)
         {
             return size.Width * size.Height;
