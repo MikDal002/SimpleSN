@@ -13,6 +13,7 @@ namespace SimpleSN.Core
             {
                 var nr = new Neuron(rnd.GetManyNextDoubleFromRange(numberOfDendryds, minValueOfWeight, maxValueOfWeights), learningImpact, tiredness, agingFactor);
                 if (fitnessFunction != null) nr.FitnessFunction = fitnessFunction;
+                nr.Name = $"Numer {i}";
                 yield return nr;
             }
         }

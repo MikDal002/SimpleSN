@@ -147,25 +147,27 @@ namespace SimpleSN.GUI
         {
             var requestedFeatures = 3;
 
+                var sizeOfImage = new Size(5, 5);
+            // Tworzę dwie warstwy neuronów
+            var neuronyCzujności = NeuronFactory.GenerateNeurons(sizeOfImage.GetArea(), requestedFeatures,
+                minValueOfWeight: 1, maxValueOfWeights: 1,
+                learningImpact: 0.1).ToList();
+
+            var wagaPoczątkowaNeuronówWyjściowych = 1.0 / (1.0 + sizeOfImage.GetArea());
+            var neuronyWyjścia = NeuronFactory.GenerateNeurons(requestedFeatures, neuronyCzujności.Count, learningImpact: 0.1,
+                minValueOfWeight: wagaPoczątkowaNeuronówWyjściowych, maxValueOfWeights: wagaPoczątkowaNeuronówWyjściowych,
+                fitnessFunction: (pair) => pair.Weight * pair.VectorEl).ToList();
             var fileNames = new[] { "pierwszy.pbm", "drugi.pbm", "trzeci.pbm", "czwarty.pbm" };
             foreach (var imageName in fileNames)
             {
+                Debug.WriteLine($"#### New image: {imageName,12} ####");
                 // Określa rozmiar obrazu
                 var image = new BitArray2D($"Portable Binary Bitmaps/{imageName}");
+                if (image.Size != sizeOfImage) throw new ArgumentOutOfRangeException($"Image {imageName} has different size than requested ({image.Size} vs {sizeOfImage})!");
                 System.Diagnostics.Debug.WriteLine(image.ToString());
-                var sizeOfImage = image.Size;
 
                 // Określa ilość cech które chcemy wyłuskać z obrazu (ilość neuronów na pozoiomie wyjścia)
 
-                // Tworzę dwie warstwy neuronów
-                var neuronyCzujności = NeuronFactory.GenerateNeurons(sizeOfImage.GetArea(), 1,
-                    minValueOfWeight: 1, maxValueOfWeights: 1,
-                    learningImpact: 0.1).ToList();
-
-                var wagaPoczątkowaNeuronówWyjściowych = 1.0 / (1.0 + sizeOfImage.GetArea());
-                var neuronyWyjścia = NeuronFactory.GenerateNeurons(requestedFeatures, neuronyCzujności.Count, learningImpact: 0.1,
-                    minValueOfWeight: wagaPoczątkowaNeuronówWyjściowych, maxValueOfWeights: wagaPoczątkowaNeuronówWyjściowych,
-                    fitnessFunction: (pair) => pair.Weight * pair.VectorEl).ToList();
 
                 neuronyWyjścia.ForEach(n => n.FitnessForVector(image.GetVector().Select(d => Convert.ToDouble(d))));
                 Neuron tenWłaściwy = null;
@@ -187,6 +189,7 @@ namespace SimpleSN.GUI
                         // pomyślnie
                         tenWłaściwy = najlepszyNeuronWyjścia;
                         indexTegoWłaściwego = index;
+                        break;
                     }
                     else
                     {
@@ -198,19 +201,37 @@ namespace SimpleSN.GUI
                 if (tenWłaściwy == null) throw new InvalidOperationException("None neuron could be fitted!");
 
                 // dopasowanie krótkotrwałej pamięci
-                neuronyCzujności.ForEach(d => d.Weights[indexTegoWłaściwego] *= Convert.ToDouble(image.Get(indexTegoWłaściwego)));
+                int nr = 0;
+                neuronyCzujności.ForEach(d =>
+                {
+                    var nowaWaga = Convert.ToDouble(image.Get(nr++)) * d.Weights[indexTegoWłaściwego];
+                    //if (nowaWaga < 0.5) Debug.WriteLine("Foo");
+                    d.Weights[indexTegoWłaściwego] = nowaWaga;
+                });
                 krótkotrwałaPamięć = neuronyCzujności.Select(d => d.Weights[indexTegoWłaściwego]).ToList();
                 for (int i = 0; i < tenWłaściwy.Weights.Count; ++i)
                 {
                     var value = tenWłaściwy.Weights[i];
                     tenWłaściwy.Weights[i] = krótkotrwałaPamięć[i] / (0.5 + krótkotrwałaPamięć.MultiplyEachElementWith(image.GetVector().Select(d => Convert.ToDouble(d)).ToList()).Sum());
                 }
-                var mapaCzujności = new BitArray2D(krótkotrwałaPamięć, image.Size);
-                
-                Debug.WriteLine("Mapa czujności:");
-                Debug.WriteLine(mapaCzujności.ToString());
+                var mapy = new List<string>();
+                for (int cecha = 0; cecha < requestedFeatures; ++cecha)
+                {
+                    var mapaCzujności = new BitArray2D(neuronyCzujności.Select(d => d.Weights[cecha]).ToList(), image.Size);
+                    mapy.Add(mapaCzujności.ToString());
+                }
 
-                
+                for (int linia = 0; linia < image.Size.Height; ++linia)
+                {
+                    foreach (var ln in mapy)
+                    {
+                        Debug.Write(ln.Split("\r\n")[linia] + " \t");
+                    }
+                    Debug.WriteLine("");
+                }
+
+
+
             }
         }
     }
