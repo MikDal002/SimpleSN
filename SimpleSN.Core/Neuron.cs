@@ -33,10 +33,10 @@ namespace SimpleSN.Core
         public double LastFitness
         {
             get => _lastFitness == null ? throw new Exception("Nie dokonano obliczeń także nie ma wartości!") : _lastFitness.Value;
-            private set => _lastFitness = value;
+            set => _lastFitness = value;
         }
 
-        public IList<double> Weights { get; }
+        public List<double> Weights { get; }
         public List<double> LastVector { get; private set; }
         public double LearningImpact { get; private set; }
         public bool IsTired => _cycleLeftToBeNotTired > 0;

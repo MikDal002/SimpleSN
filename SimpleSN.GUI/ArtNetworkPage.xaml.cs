@@ -45,13 +45,13 @@ namespace SimpleSN.GUI
             _dimension2 = dimension2 > 0 ? dimension2 : throw new ArgumentOutOfRangeException(nameof(dimension2), dimension2, string.Empty);
             _array = new BitArray(dimension1 * dimension2);
         }
-
+        public bool Get(int w) => _array.Get(w);           
         public bool Get(int x, int y) { CheckBounds(x, y); return _array[y * _dimension1 + x]; }
         public bool Set(int x, int y, bool val) { CheckBounds(x, y); return _array[y * _dimension1 + x] = val; }
         public bool this[int x, int y] { get { return Get(x, y); } set { Set(x, y, value); } }
         public IEnumerable<bool> GetVector()
         {
-            foreach(object foo in _array)
+            foreach (object foo in _array)
             {
                 yield return Convert.ToBoolean(foo);
             }
@@ -84,32 +84,52 @@ namespace SimpleSN.GUI
             var requestedFeatures = 40;
 
             // Tworzę dwie warstwy neuronów
-            var neuronyCzujności = NeuronFactory.GenerateNeurons(sizeOfImage.GetArea(), 1, 
+            var neuronyCzujności = NeuronFactory.GenerateNeurons(sizeOfImage.GetArea(), 1,
                 minValueOfWeight: 1, maxValueOfWeights: 1,
                 learningImpact: 0.1).ToList();
 
             var wagaPoczątkowaNeuronówWyjściowych = 1.0 / (1.0 + sizeOfImage.GetArea());
-            var neuronyWyjścia = NeuronFactory.GenerateNeurons(requestedFeatures, neuronyCzujności.Count, learningImpact: 0.1, 
+            var neuronyWyjścia = NeuronFactory.GenerateNeurons(requestedFeatures, neuronyCzujności.Count, learningImpact: 0.1,
                 minValueOfWeight: wagaPoczątkowaNeuronówWyjściowych, maxValueOfWeights: wagaPoczątkowaNeuronówWyjściowych,
                 fitnessFunction: (pair) => pair.Weight * pair.VectorEl).ToList();
 
             neuronyWyjścia.ForEach(n => n.FitnessForVector(image.GetVector().Select(d => Convert.ToDouble(d))));
-            var najlepszyNeuronWyjścia = neuronyWyjścia.Max();
-            var index = neuronyWyjścia.IndexOf(najlepszyNeuronWyjścia);
+            Neuron tenWłaściwy = null;
+            int indexTegoWłaściwego = -1;
+            List<double> krótkotrwałaPamięć = null;
+            for (int i = 0; i < neuronyWyjścia.Count; i++)
+            {
+                var najlepszyNeuronWyjścia = neuronyWyjścia.Max();
+                var index = neuronyWyjścia.IndexOf(najlepszyNeuronWyjścia);
 
-            var krótkotrwałaPamięć = neuronyCzujności.Select(d => d.Weights.ElementAt(index)).ToList();
-            var dopasowanieKrótkotrwałejPamięci_A = krótkotrwałaPamięć.MultiplyEachElementWith(image.GetVector().Select(d => Convert.ToDouble(d)).ToList()).Sum();
-            var dopasowanieKrótkotrwałejPamięci_B = image.GetVector().Select(d => Convert.ToDouble(d)).Sum();
-            var dopasowanieKrótkotrwałejPamięci = dopasowanieKrótkotrwałejPamięci_A / dopasowanieKrótkotrwałejPamięci_B;
-            var ro = 0.5;
-            var jestDopasowane = dopasowanieKrótkotrwałejPamięci > ro;
+                krótkotrwałaPamięć = neuronyCzujności.Select(d => d.Weights[index]).ToList();
+                var dopasowanieKrótkotrwałejPamięci_A = krótkotrwałaPamięć.MultiplyEachElementWith(image.GetVector().Select(d => Convert.ToDouble(d)).ToList()).Sum();
+                var dopasowanieKrótkotrwałejPamięci_B = image.GetVector().Select(d => Convert.ToDouble(d)).Sum();
+                var dopasowanieKrótkotrwałejPamięci = dopasowanieKrótkotrwałejPamięci_A / dopasowanieKrótkotrwałejPamięci_B;
+                var ro = 0.5;
+                var jestDopasowane = dopasowanieKrótkotrwałejPamięci > ro;
+                if (jestDopasowane)
+                {
+                    // pomyślnie
+                    tenWłaściwy = najlepszyNeuronWyjścia;
+                    indexTegoWłaściwego = index;
+                }
+                else
+                {
+                    // nie pomyślnie – wyzeruj 
+                    najlepszyNeuronWyjścia.LastFitness = 0;
+                }
+            }
 
+            if (tenWłaściwy == null) throw new InvalidOperationException("None neuron could be fitted!");
 
-            // To jest wektor wyjściowy dolnej warstwy
-            var y_d = neuronyCzujności.Select(d => d.LastFitness).ToList().TheBiggestValueThreatAsOneOthersAsZeros();
-            // to jest wektor wyjściowy górnej warstwy 
-            var y_g = neuronyWyjścia.Select(d => d.LastFitness).ToList().TheBiggestValueThreatAsOneOthersAsZeros();
-
+            // dopasowanie krótkotrwałej pamięci
+            neuronyCzujności.ForEach(d => d.Weights[indexTegoWłaściwego] *= Convert.ToDouble(image.Get(indexTegoWłaściwego)));
+            for (int i = 0; i < tenWłaściwy.Weights.Count; ++i)
+            {
+                var value = tenWłaściwy.Weights[i];
+                tenWłaściwy.Weights[i] = krótkotrwałaPamięć[i] / (0.5 + krótkotrwałaPamięć.MultiplyEachElementWith(image.GetVector().Select(d => Convert.ToDouble(d)).ToList()).Sum());
+            }
         }
     }
 }
