@@ -25,6 +25,7 @@ namespace SimpleSN.GUI
     {
         public List<double> Weights { get; set; }
         public string Name { get; set; }
+        public int NumberOfWins { get; set; }
 
         public PointF ToPointF()
         {
@@ -32,12 +33,13 @@ namespace SimpleSN.GUI
             return new PointF((float)Weights[0], (float)Weights[1]);
         }
 
-        public static implicit operator NeuronDto(Neuron neuron)
+        public static explicit operator NeuronDto(Neuron neuron)
         {
             var newDto = new NeuronDto
             {
                 Weights = new List<double>(),
-                Name = neuron.Name
+                Name = neuron.Name,
+                NumberOfWins = neuron.Age,
             };
             foreach (var wght in neuron.Weights) newDto.Weights.Add(wght);
             return newDto;
@@ -46,13 +48,15 @@ namespace SimpleSN.GUI
     public class Generation
     {
         public List<NeuronDto> Neurons { get; }
+        public NeuronDto? Winner { get; }
         public int GenerationNumber { get; }
 
 
-        public Generation(IEnumerable<NeuronDto> neurons, int generationNumber)
+        public Generation(IEnumerable<NeuronDto> neurons, int generationNumber, NeuronDto? winner)
         {
             Neurons = neurons as List<NeuronDto> ?? neurons.ToList();
             GenerationNumber = generationNumber;
+            Winner = winner;
         }
     }
     public abstract class ViewModelBase : INotifyPropertyChanged, IDisposable
@@ -90,7 +94,7 @@ namespace SimpleSN.GUI
         private readonly Trainer trainer;
 
         public ObservableCollection<PointF> VisibleNeurons { get; } = new ObservableCollection<PointF>();
-
+        public ReactivePropertySlim<Generation> VisibleGenerationGeneration { get; }
         public List<Generation> Generations { get; } = new List<Generation>();
         public ReactivePropertySlim<int> GenerationCount { get; }
         public BusyNotifier IsStillWorking { get; }
@@ -122,6 +126,7 @@ namespace SimpleSN.GUI
         {
             _generator = new DataGenerator();
 
+            VisibleGenerationGeneration = new ReactivePropertySlim<Generation>().AddTo(Disposables);
             GenerationCount = new ReactivePropertySlim<int>(0).AddTo(Disposables);
             IsStillWorking = new BusyNotifier();
             Start = new ReactiveCommand(IsStillWorking.Select(d => !d))
@@ -134,10 +139,15 @@ namespace SimpleSN.GUI
             //trainer.IteractionStarting += (sender, trainer) => Debug.WriteLine($"Iteration {trainer.Iteration} started…");
             trainer.IteractionWinner += (sender, winner) =>
             {
-                Generations.Add(new Generation(trainer.Neurons.Select(d => (NeuronDto)d), trainer.Iteration));
+                Generations.Add(new Generation(trainer.Neurons.Select(d => (NeuronDto)d), trainer.Iteration, winner != null ? (NeuronDto?)winner : null));
                 GenerationCount.Value = trainer.Iteration;
 
-                //Debug.WriteLine($"Iteration won: {winner}");
+                
+                if (Generations.Count - 1 != trainer.Iteration)
+                {
+                    Debug.WriteLine($"Count won: {Generations.Count}");
+                    Debug.WriteLine($"Iteration won: {trainer.Iteration}");
+                }
             };
             trainer.TrainingFinished += (sender, trainer) =>
             {
@@ -176,7 +186,7 @@ namespace SimpleSN.GUI
                     }
 
                     Generations.Clear();
-                    Generations.Add(new Generation(neurons.Select(d => (NeuronDto)d), 0));
+                    Generations.Add(new Generation(neurons.Select(d => (NeuronDto)d), 0, null));
 
                     List<double[]> rawData = DataPoints.Select(d => new[] { (double)d.X, (double)d.Y }).ToList();
                     var toLearn = new List<double[]>();
@@ -202,6 +212,7 @@ namespace SimpleSN.GUI
                 // if (generationToShow == null) return;
                 foreach (var neuron in generationToShow.Neurons)
                     VisibleNeurons.Add(neuron.ToPointF());
+                VisibleGenerationGeneration.Value = Generations[VisibleGeneration];
             }
         }
     }

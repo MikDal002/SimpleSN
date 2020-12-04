@@ -24,7 +24,7 @@ namespace SimpleSN.Core
         #endregion
 
         private int _cycleLeftToBeNotTired = 0;
-        private int _age = 0;
+        public int Age { get; private set; }  = 0;
 
         public string Name { get; set; } = string.Empty;
         public Func<WeightVectorPair, double> FitnessFunction { get; set; } = (pair) => Math.Pow(pair.VectorEl - pair.Weight, 2);
@@ -65,14 +65,14 @@ namespace SimpleSN.Core
             {
                 LastFitness += FitnessFunction(new WeightVectorPair(Weights[i], LastVector[i]));
             }
-            LastFitness = AgingFactor < 0.0001 ? LastFitness : LastFitness * ((1 + AgingFactor) * _age);
+            LastFitness = AgingFactor < 0.0001 ? LastFitness : LastFitness * ((1 + AgingFactor) * Age);
             return LastFitness;
         }
 
         public void Retrain()
         {
             if (IsTired) throw new NeuronTiredException();
-            _age++;
+            Age++;
             _cycleLeftToBeNotTired = CyclesNeededToBeNotTired;
             if (LastVector.Count != Weights.Count) throw new ArgumentException(nameof(LastVector));
             for (int i = 0; i < LastVector.Count; i++)

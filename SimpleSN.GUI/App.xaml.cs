@@ -7,6 +7,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace SimpleSN.GUI
 {
@@ -18,7 +19,8 @@ namespace SimpleSN.GUI
             Bind<MainWindow>().ToSelf();
             Bind<SimpleNeuronsViewModel>().ToSelf();
             Bind<ArtNetworkPageViewModel>().ToSelf();
-            Bind<ArtNetworkPage>().ToSelf();
+            Bind<Page, ArtNetworkPage>().To<ArtNetworkPage>();
+            Bind<Page, SimpleNeurons>().To<SimpleNeurons>();
         }
     }
     /// <summary>

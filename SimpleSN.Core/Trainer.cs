@@ -42,8 +42,7 @@ namespace SimpleSN.Core
                 var theBestNeurone = Neurons.Where(d => !d.IsTired).Min();
 
                 // All neurons are tired! Awsome!
-                if (theBestNeurone == null) continue;
-                else theBestNeurone.Retrain();
+                if (theBestNeurone != null) theBestNeurone.Retrain();
 
                 InvokeInteractionWinner(theBestNeurone);
                 InvokeInteractionFinished();
