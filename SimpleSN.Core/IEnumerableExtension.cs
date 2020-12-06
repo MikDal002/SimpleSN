@@ -23,6 +23,7 @@ namespace SimpleSN.Core
                 leftHasNext = leftEnum.MoveNext();
                 rightHasNext = rightEnum.MoveNext();
                 if ((leftHasNext && !rightHasNext) || (!leftHasNext && rightHasNext)) throw new InvalidOperationException("Cannot sum two vectors with different length");
+                else if (!leftHasNext && !rightHasNext) break;
                 yield return leftEnum.Current * rightEnum.Current;
             }
             while (leftHasNext && rightHasNext);

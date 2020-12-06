@@ -31,16 +31,16 @@
     <None Update="Portable Binary Bitmaps\Alphabet\B.pbm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Portable Binary Bitmaps\czwarty.pbm">
+    <None Update="Portable Binary Bitmaps\004.pbm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Portable Binary Bitmaps\drugi.pbm">
+    <None Update="Portable Binary Bitmaps\002.pbm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Portable Binary Bitmaps\pierwszy.pbm">
+    <None Update="Portable Binary Bitmaps\001.pbm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Portable Binary Bitmaps\trzeci.pbm">
+    <None Update="Portable Binary Bitmaps\003.pbm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
