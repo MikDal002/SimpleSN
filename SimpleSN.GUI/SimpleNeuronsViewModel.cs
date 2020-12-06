@@ -137,7 +137,7 @@ namespace SimpleSN.GUI
 
             trainer = new Trainer();
             //trainer.IteractionStarting += (sender, trainer) => Debug.WriteLine($"Iteration {trainer.Iteration} started…");
-            trainer.IteractionWinner += (sender, winner) =>
+            trainer.IterationFinished += (sender, winner) =>
             {
                 Generations.Add(new Generation(trainer.Neurons.Select(d => (NeuronDto)d), trainer.Iteration, winner != null ? (NeuronDto?)winner : null));
                 GenerationCount.Value = trainer.Iteration;
@@ -192,7 +192,7 @@ namespace SimpleSN.GUI
                     var toLearn = new List<double[]>();
                     foreach (var _ in Enumerable.Range(0, RepeatLearningDataAmount)) toLearn.AddRange(rawData);
                     Debug.WriteLine($"Amount: {toLearn.Count}");
-                    trainer.Train(neurons, (IEnumerable<IEnumerable<double>>)toLearn);
+                    trainer.Train(neurons, toLearn);
                 }
                 catch (Exception e)
                 {

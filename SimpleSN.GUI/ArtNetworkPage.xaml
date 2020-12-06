@@ -1,10 +1,13 @@
 ﻿<Page x:Class="SimpleSN.GUI.ArtNetworkPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SimpleSN.GUI"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:syncfusion="http://schemas.syncfusion.com/wpf" Title="ArtNetworkPage" d:DesignHeight="450" d:DesignWidth="800"
       mc:Ignorable="d">
+    <Page.Resources>
+        <syncfusion:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
+    </Page.Resources>
 
     <syncfusion:DockingManager UseDocumentContainer="True">
         <StackPanel HorizontalAlignment="Left" syncfusion:DockingManager.CanClose="False" syncfusion:DockingManager.Header="Ustawienia" Orientation="Vertical">
-            <StackPanel DataContext="{Binding Settings}" HorizontalAlignment="Stretch">
+            <StackPanel HorizontalAlignment="Stretch" DataContext="{Binding Settings}">
 
                 <StackPanel.Resources>
                     <Style x:Key="Label" x:Name="Label" TargetType="Label">
@@ -13,42 +16,64 @@
                         <Setter Property="Margin" Value="0,0,5,0" />
                     </Style>
                 </StackPanel.Resources>
-                <DockPanel >
-                    <Label Content="Katalog z danymi uczącymi:" Style="{StaticResource Label}" DockPanel.Dock="Left"/>
+                <GroupBox Header="Dane uczące">
+                    <StackPanel Orientation="Vertical">
+                        <DockPanel>
+                            <Label Content="Katalog z danymi uczącymi:" DockPanel.Dock="Left" Style="{StaticResource Label}" />
 
-                    <Button Margin="5,0" Padding="5,0" Command="{Binding SelectDirForLearningData}" Content="..." DockPanel.Dock="Right"/>
-                    <TextBox Text="{Binding DirectoryWithLearningFiles.Value}" />
-                </DockPanel>
-                <StackPanel Orientation="Horizontal" >
+                            <Button Margin="5,0" Padding="5,0"
+                                    Command="{Binding SelectDirForLearningData}"
+                                    Content="..." DockPanel.Dock="Right" />
+                            <TextBox Text="{Binding DirectoryWithLearningFiles.Value}" />
+                        </DockPanel>
+                        <Label Content="Rozmiar danych:" />
+
+                        <RadioButton Margin="9,0,0,0"  Content="Na podstawie pierwszego pliku" GroupName="ImageSizeGroup" IsChecked="{Binding TryDetermineSizeFromFile.Value}"/>
+                        <GroupBox>
+                                <GroupBox.Header>
+                                <RadioButton Content="Ustaw ręcznie" GroupName="ImageSizeGroup" />
+                                </GroupBox.Header>
+                            <StackPanel Orientation="Horizontal" IsEnabled="{Binding TryDetermineSizeFromFile.Value, Converter={StaticResource InvertBooleanConverter}}">
+                                <Label Content="Szerokość:" />
+                                <syncfusion:UpDown NumberDecimalDigits="0" MinValue="1" MinWidth="50" Value="{Binding ImageWidth.Value}"/>
+                                <Label Content="Wysokość:" />
+                                <syncfusion:UpDown NumberDecimalDigits="0" MinValue="1" MinWidth="50"  Value="{Binding ImageHeight.Value}"/>
+                            </StackPanel>
+                            </GroupBox>
+                        
+                    </StackPanel>
+                </GroupBox>
+                <StackPanel Orientation="Horizontal">
                     <Label Content="Ilość cech do rozpoznania:" Style="{StaticResource Label}" />
                     <syncfusion:UpDown MinWidth="100" HorizontalAlignment="Right" HorizontalContentAlignment="Right" MinValue="0" NumberDecimalDigits="0"
                                        Step="1"
                                        Value="{Binding RequestedFeatures.Value}" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" >
+                <StackPanel Orientation="Horizontal">
                     <Label Content="Wymagany poziom podobieństwa:" Style="{StaticResource Label}" />
-                    <syncfusion:UpDown MinWidth="100" HorizontalAlignment="Right" HorizontalContentAlignment="Right" MinValue="0" NumberDecimalDigits="3"
-                                       Step="0.01" MaxValue="1"
+                    <syncfusion:UpDown MinWidth="100" HorizontalAlignment="Right" HorizontalContentAlignment="Right" MaxValue="1" MinValue="0"
+                                       NumberDecimalDigits="3" Step="0.01"
                                        Value="{Binding SimilarityThreshold.Value}" />
                 </StackPanel>
+
             </StackPanel>
-            <Button Content="Przelicz" Command="{Binding Recalculate}"/>
+            <Button Command="{Binding Recalculate}" Content="Przelicz" />
         </StackPanel>
 
-        <ListBox HorizontalContentAlignment="Stretch" syncfusion:DockingManager.CanClose="False" syncfusion:DockingManager.Header="Pliki wejściowe"
+        <ItemsControl syncfusion:DragDropHelper.ShowDragAdorner="True"  syncfusion:DragDropHelper.IsDropTarget="True" HorizontalContentAlignment="Stretch" syncfusion:DockingManager.CanClose="False" syncfusion:DockingManager.Header="Pliki wejściowe"
                  ItemsSource="{Binding InputFiles}"
-                 SelectedIndex="{Binding VisibleGeneration.Value}">
-            <ListBox.ItemTemplate>
+                 ><!--SelectedIndex="{Binding VisibleGeneration.Value}"-->
+            <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel HorizontalAlignment="Stretch">
+                    <StackPanel HorizontalAlignment="Stretch" syncfusion:DragDropHelper.IsDragSource="True">
                         <Label Content="{Binding Name}" />
                         <Label HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" BorderBrush="Gray" BorderThickness="1"
                                Content="{Binding}"
                                FontFamily="Consolas" />
                     </StackPanel>
                 </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
         <DockPanel syncfusion:DockingManager.CanClose="False" syncfusion:DockingManager.Header="Mapa pamięci" syncfusion:DockingManager.State="Document">
             <DockPanel DockPanel.Dock="Bottom">
 
@@ -61,21 +86,24 @@
                                           Minimum="0" TickFrequency="1000" TickPlacement="Inline" ToolTipFormat="N"
                                           Value="{Binding VisibleGeneration.Value}" />
             </DockPanel>
-            <ItemsControl ItemsSource="{Binding VisibleMemoryMaps}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Label Padding="30" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" BorderBrush="Gray"
-                               BorderThickness="1"
-                               Content="{Binding}"
-                               FontFamily="Consolas" FontSize="30" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+
+            <ScrollViewer>
+                <ItemsControl ItemsSource="{Binding VisibleMemoryMaps}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel IsItemsHost="True" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Visible" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Label Padding="30" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" BorderBrush="Gray"
+                                   BorderThickness="1"
+                                   Content="{Binding}"
+                                   FontFamily="Consolas" FontSize="30" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </DockPanel>
     </syncfusion:DockingManager>
 </Page>

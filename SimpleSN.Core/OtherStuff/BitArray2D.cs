@@ -90,7 +90,7 @@ namespace SimpleSN.GUI
             {
                 for (int y = 0; y < _dimension2; y++)
                 {
-                    builder.Append(_array.Get((x * _dimension1) + y) ? 'X' : ' ');
+                    builder.Append(_array.Get((x * _dimension1) + y) ? '█' : '░');
                 }
                 builder.AppendLine();
             }

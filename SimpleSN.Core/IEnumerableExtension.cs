@@ -11,6 +11,22 @@ namespace SimpleSN.Core
         {
             return enumerable.Select(d => d.ToString()).Aggregate((left, right) => left + "; " + right);
         }
+        public static IEnumerable<double> MultiplyEachElementWith(this IEnumerable<double> leftList, IEnumerable<double> rightList)
+        {
+            //if (leftList.Count != rightList.Count) throw new InvalidOperationException("Cannot sum two vectors with different length");
+            var leftEnum = leftList.GetEnumerator();
+            var rightEnum = rightList.GetEnumerator();
+            bool leftHasNext;
+            bool rightHasNext;
+            do
+            {
+                leftHasNext = leftEnum.MoveNext();
+                rightHasNext = rightEnum.MoveNext();
+                if ((leftHasNext && !rightHasNext) || (!leftHasNext && rightHasNext)) throw new InvalidOperationException("Cannot sum two vectors with different length");
+                yield return leftEnum.Current * rightEnum.Current;
+            }
+            while (leftHasNext && rightHasNext);
+        }
 
         public static IEnumerable<double> MultiplyEachElementWith(this ICollection<double> leftList, ICollection<double> rightList)
         {

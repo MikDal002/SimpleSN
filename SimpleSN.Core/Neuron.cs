@@ -69,15 +69,16 @@ namespace SimpleSN.Core
             return LastFitness;
         }
 
-        public void Retrain()
+        public void Retrain(Func<double, int, double> actionForEachWeight = null)
         {
+        if (actionForEachWeight == null) actionForEachWeight = (lastWeight, index) => lastWeight + LearningImpact * (LastVector[index] - lastWeight);
             if (IsTired) throw new NeuronTiredException();
             Age++;
             _cycleLeftToBeNotTired = CyclesNeededToBeNotTired;
             if (LastVector.Count != Weights.Count) throw new ArgumentException(nameof(LastVector));
             for (int i = 0; i < LastVector.Count; i++)
             {
-                Weights[i] = Weights[i] + LearningImpact * (LastVector[i] - Weights[i]);
+                Weights[i] = actionForEachWeight(Weights[i], i);
             }
         }
 

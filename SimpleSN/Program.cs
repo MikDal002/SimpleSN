@@ -26,8 +26,8 @@ namespace SimpleSN
             File.WriteAllText("sourcedata.csv", vectors.ToString());
 
             var trainer = new Trainer();
-            trainer.IteractionStarting += (sender, trainer) => Console.WriteLine($"Iteration {trainer.Iteration} started…");
-            trainer.IteractionWinner += (sender, winner) => Console.WriteLine($"Iteration won: {winner}");
+            trainer.IterationStarted += (sender, trainer) => Console.WriteLine($"Iteration {trainer.Iteration} started…");
+            trainer.IterationFinished += (sender, winner) => Console.WriteLine($"Iteration won: {winner}");
             trainer.TrainingFinished += (sender, trainer) =>
             {
                 Console.WriteLine($"Training finished in {trainer.Iteration} iterations");
@@ -35,8 +35,8 @@ namespace SimpleSN
                 trainer.Neurons.ForEach(d => Console.WriteLine(d.ToString()));
             };
             //trainer.Train(NeuronFactory.GetFromLab1(), VectorsFactory.FromFile("Lab1InputVectors.csv"));
-            var neurons = NeuronFactory.GenerateNeurons(10, 2, 0, 1000);
-            trainer.Train(neurons, (IEnumerable<IEnumerable<double>>)data.Select(d=> new[] {(double) d.X, (double)d.Y }));
+            var neurons = NeuronFactory.GenerateNeurons(10, 2, 0, 1000).ToList();
+            trainer.Train(neurons, data.Select(d=> new[] {(double) d.X, (double)d.Y }));
 
             StringBuilder neur = new StringBuilder();
             neurons.Select(d => d.Weights).Aggregate(neur, (_, r) => neur.AppendLine(r.ToCsvLine()));
