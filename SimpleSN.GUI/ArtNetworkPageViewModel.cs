@@ -12,8 +12,10 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Forms;
+using System.Windows.Threading;
 
 namespace SimpleSN.GUI
 {
@@ -89,21 +91,28 @@ namespace SimpleSN.GUI
 
             VisibleGeneration.Where(d => d >= 0 && d < AllMemoryMaps.Count).Subscribe(d =>
             {
+                if (AllMemoryMaps.Count == 0) return;
                 VisibleMemoryMaps.Clear();
                 VisibleMemoryMaps.AddRangeOnScheduler(AllMemoryMaps[d]);
             }).AddTo(Disposables);
             Settings.DirectoryWithLearningFiles.Subscribe(d =>
             {
-                LoadAllFiles(d);
+                InputFiles.ClearOnScheduler();
+                var disp = Dispatcher.CurrentDispatcher;
+                Task.Run(() => LoadAllFiles(d, (array) => disp.Invoke(() => InputFiles.AddOnScheduler(array))).ToList());
+               
+
             }).AddTo(Disposables);
         }
 
-        private void LoadAllFiles(string dirPath)
+        private IEnumerable<BitArray2D> LoadAllFiles(string dirPath, Action<BitArray2D> adder)
         {
+            if (string.IsNullOrEmpty(dirPath)) throw new ArgumentException($"'{nameof(dirPath)}' cannot be null or empty", nameof(dirPath));
+            if (adder is null) throw new ArgumentNullException(nameof(adder));
+
             var directory = new DirectoryInfo(dirPath);
             if (!directory.Exists) throw new ArgumentException(nameof(dirPath), $"Directory {dirPath} doesn't exist!");
 
-            InputFiles.Clear();
             bool isSizeToSet = Settings.TryDetermineSizeFromFile.Value;
             var options = new EnumerationOptions()
             {
@@ -125,7 +134,7 @@ namespace SimpleSN.GUI
                     if (result == DialogResult.Abort)
                     {
                         InputFiles.Clear();
-                        return;
+                        yield break;
                     } else if (result == DialogResult.Ignore)
                     {
                         continue;
@@ -134,8 +143,9 @@ namespace SimpleSN.GUI
                         continue;   
                     }
                 }
+                adder(image);
+                yield return image;
 
-                InputFiles.Add(image);
             }
         }
 
@@ -169,7 +179,9 @@ namespace SimpleSN.GUI
                 }
                 AllMemoryMaps.AddRangeOnScheduler(maps);
             };
-            artTrainer.Train(neuronyWyjścia, InputFiles.Select(d => d.GetVector().Select(d => Convert.ToDouble(d)).ToList()));
+            var task = Task.Run(() => 
+            artTrainer.Train(neuronyWyjścia, InputFiles.Select(d => d.GetVector().Select(d => Convert.ToDouble(d)).ToList())));
+            //task.Wait();
         }
     }
 }
