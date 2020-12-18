@@ -19,6 +19,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Portable Binary Bitmaps\Alphabet\G.pbm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Portable Binary Bitmaps\Alphabet\F.pbm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Portable Binary Bitmaps\Alphabet\E.pbm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Portable Binary Bitmaps\Alphabet\D.pbm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

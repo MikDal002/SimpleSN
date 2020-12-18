@@ -24,7 +24,9 @@ namespace SimpleSN.Core
                 rightHasNext = rightEnum.MoveNext();
                 if ((leftHasNext && !rightHasNext) || (!leftHasNext && rightHasNext)) throw new InvalidOperationException("Cannot sum two vectors with different length");
                 else if (!leftHasNext && !rightHasNext) break;
-                yield return leftEnum.Current * rightEnum.Current;
+                var lc = leftEnum.Current;
+                var rc = rightEnum.Current;
+                yield return lc * rc;
             }
             while (leftHasNext && rightHasNext);
         }

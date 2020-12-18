@@ -26,6 +26,7 @@
                                     Content="..." DockPanel.Dock="Right" />
                             <TextBox Text="{Binding DirectoryWithLearningFiles.Value}" />
                         </DockPanel>
+                        <CheckBox IsChecked="{Binding LoadFromSubdirs.Value}" Content="Załaduj z podkatalogów?" />
                         <Label Content="Rozmiar danych:" />
 
                         <RadioButton Margin="9,0,0,0"  Content="Na podstawie pierwszego pliku" GroupName="ImageSizeGroup" IsChecked="{Binding TryDetermineSizeFromFile.Value}"/>
@@ -60,20 +61,20 @@
             <Button Command="{Binding Recalculate}" Content="Przelicz" />
         </StackPanel>
 
-        <ItemsControl syncfusion:DragDropHelper.ShowDragAdorner="True"  syncfusion:DragDropHelper.IsDropTarget="True" HorizontalContentAlignment="Stretch" syncfusion:DockingManager.CanClose="False" syncfusion:DockingManager.Header="Pliki wejściowe"
+        <ListView syncfusion:DragDropHelper.ShowDragAdorner="True"  syncfusion:DragDropHelper.IsDropTarget="True" HorizontalContentAlignment="Stretch" syncfusion:DockingManager.CanClose="False" syncfusion:DockingManager.Header="Pliki wejściowe"
                  ItemsSource="{Binding InputFiles}"
                  ><!--SelectedIndex="{Binding VisibleGeneration.Value}"-->
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <StackPanel HorizontalAlignment="Stretch" syncfusion:DragDropHelper.IsDragSource="True">
                         <Label Content="{Binding Name}" />
-                        <Label HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" BorderBrush="Gray" BorderThickness="1"
+                        <Label HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" BorderBrush="Gray" BorderThickness="1" FontSize="5"
                                Content="{Binding}"
                                FontFamily="Consolas" />
                     </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        </ListView>
         <DockPanel syncfusion:DockingManager.CanClose="False" syncfusion:DockingManager.Header="Mapa pamięci" syncfusion:DockingManager.State="Document">
             <DockPanel DockPanel.Dock="Bottom">
 
@@ -99,7 +100,7 @@
                             <Label Padding="30" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" BorderBrush="Gray"
                                    BorderThickness="1"
                                    Content="{Binding}"
-                                   FontFamily="Consolas" FontSize="30" />
+                                   FontFamily="Consolas" FontSize="5" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

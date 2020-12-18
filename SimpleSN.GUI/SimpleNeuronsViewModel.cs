@@ -97,7 +97,13 @@ namespace SimpleSN.GUI
         public ReactivePropertySlim<Generation> VisibleGenerationGeneration { get; }
         public List<Generation> Generations { get; } = new List<Generation>();
         public ReactivePropertySlim<int> GenerationCount { get; }
+        public ReactivePropertySlim<int> DataGroupsCount { get; }
+        public ReactivePropertySlim<int> MaxXPointValue { get; }
+        public ReactivePropertySlim<int> MaxYPointValue { get; }
+        public ReactivePropertySlim<int> GroupRadius { get; }
+        public ReactivePropertySlim<int> AllPointsCount { get; }
         public BusyNotifier IsStillWorking { get; }
+        public BooleanNotifier DontIntializeNeurons { get; }
 
         public int VisibleGeneration { get => _visibleGeneration; set => UpdateFieldAndNotify(ref _visibleGeneration, value); }
         public int Tiredness { get => tiredness; set => UpdateFieldAndNotify(ref tiredness, value); }
@@ -127,8 +133,14 @@ namespace SimpleSN.GUI
             _generator = new DataGenerator();
 
             VisibleGenerationGeneration = new ReactivePropertySlim<Generation>().AddTo(Disposables);
+            DataGroupsCount = new ReactivePropertySlim<int>(10).AddTo(Disposables);
             GenerationCount = new ReactivePropertySlim<int>(0).AddTo(Disposables);
+            MaxXPointValue = new ReactivePropertySlim<int>(1000).AddTo(Disposables);
+            MaxYPointValue = new ReactivePropertySlim<int>(1000).AddTo(Disposables);
+            GroupRadius = new ReactivePropertySlim<int>(50).AddTo(Disposables);
+            AllPointsCount = new ReactivePropertySlim<int>(1000).AddTo(Disposables);
             IsStillWorking = new BusyNotifier();
+            DontIntializeNeurons = new BooleanNotifier(false);
             Start = new ReactiveCommand(IsStillWorking.Select(d => !d))
                 .WithSubscribe(async () =>
             {
@@ -161,7 +173,7 @@ namespace SimpleSN.GUI
 
         private void GenerateTrainSet()
         {
-            DataPoints = _generator.Generate(10, 50, 1000, new Point(0, 0), new Point(1000, 1000)).ToList();
+            DataPoints = _generator.Generate(DataGroupsCount.Value, GroupRadius.Value, AllPointsCount.Value, new Point(0, 0), new Point(MaxXPointValue.Value, MaxYPointValue.Value)).ToList();
         }
 
         private async Task StartLearining()
@@ -178,7 +190,7 @@ namespace SimpleSN.GUI
                     List<Neuron> neurons = null;
                     if (GenerateNewNeurons || Generations.Count == 0)
                     {
-                        neurons = NeuronFactory.GenerateNeurons(NeuronAmount, 2, learningImpact: LearningImpact, tiredness: Tiredness, minValueOfWeight: 0, maxValueOfWeights: 1000, agingFactor: AgingFactor).ToList();
+                        neurons = NeuronFactory.GenerateNeurons(NeuronAmount, 2, learningImpact: LearningImpact, tiredness: Tiredness, minValueOfWeight: 0, maxValueOfWeights: DontIntializeNeurons.Value ? 0 : Math.Min(MaxXPointValue.Value, MaxYPointValue.Value), agingFactor: AgingFactor).ToList();
                     }
                     else
                     {

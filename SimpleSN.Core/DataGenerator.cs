@@ -18,7 +18,14 @@ namespace SimpleSN.Core
             for (int i = 0; i < amountOfPoints; i++)
             {
                 var randomSource = sources[rnd.Next(0, sources.Length)];
-                Size distanceFromSource = new Size(width: (int)(rnd.NextDouble() * maxDistanceForPointFromSource), height: (int)(rnd.NextDouble() * maxDistanceForPointFromSource));
+                double a = rnd.NextDouble() * 2 * Math.PI;
+                double r = maxDistanceForPointFromSource * Math.Sqrt(rnd.NextDouble());
+
+                double x = r * Math.Cos(a);
+                double y = r * Math.Sin(a);
+
+                // Size distanceFromSource = new Size(width: (int)(rnd.NextDouble() * maxDistanceForPointFromSource), height: (int)(rnd.NextDouble() * maxDistanceForPointFromSource));
+                Size distanceFromSource = new Size(width: (int)x, height: (int)y);
                 yield return new Point(x: randomSource.X + distanceFromSource.Width, y: randomSource.Y + distanceFromSource.Height);
             }
         }

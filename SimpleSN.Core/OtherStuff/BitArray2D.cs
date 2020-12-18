@@ -40,11 +40,46 @@ namespace SimpleSN.GUI
             }
         }
 
-        public BitArray2D(string pbmFilename)
+
+
+        public BitArray2D(string fileName)
+        {
+            var extension = System.IO.Path.GetExtension(fileName);
+            if (extension == ".pbm")
+            {
+                LoadPBM(fileName);
+            }
+            else if (extension == ".png")
+            {
+                LoadPNG(fileName);
+            }
+            else throw new NotImplementedException();
+        }
+
+        private void LoadPNG(string fileName)
+        {
+            using Bitmap bitmap = new Bitmap(fileName);
+            var size = new Size(bitmap.Width, bitmap.Height);
+            _dimension1 = size.Width;
+            _dimension2 = size.Height;
+            _array = new BitArray(size.GetArea());
+            for(int y = 0; y < size.Height; ++y)
+            {
+                for(int x = 0; x <size.Width; ++x)
+                {
+                    Color clr = bitmap.GetPixel(x, y);
+                    var brightness = clr.GetBrightness();
+                    Set(x, y, brightness < 0.5);
+
+                }
+            }
+        }
+
+        private void LoadPBM(string fileName)
         {
             Regex findWhiteSpaces = new Regex(@"\s");
-            Name = System.IO.Path.GetFileName(pbmFilename);
-            var rawLines = System.IO.File.ReadAllLines(pbmFilename);
+            Name = System.IO.Path.GetFileName(fileName);
+            var rawLines = System.IO.File.ReadAllLines(fileName);
             var wasTypeReaded = false;
             var size = System.Drawing.Size.Empty;
             int currentPoint = 0;

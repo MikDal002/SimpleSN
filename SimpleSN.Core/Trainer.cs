@@ -48,8 +48,13 @@ namespace SimpleSN.Core
 
     public class TrainArtNetwork : AbstractTrainer
     {
+        public class MemoryMap
+        {
+            public double[] Map;
+            public bool IsUsed = false;
+        }
         private List<Neuron> _neurons;
-        public List<double[]> MemoryMaps { get; } = new List<double[]>();
+        public List<MemoryMap> MemoryMaps { get; } = new List<MemoryMap>();
         public double RequiredSimilarity { get; set; }  = 0.7;
         public override IReadOnlyList<Neuron> Neurons => _neurons;
 
@@ -63,36 +68,53 @@ namespace SimpleSN.Core
                 InvokeInteractionStarting();
                 
                 inputNeurons.ForEach(d => d.FitnessForVector(learningVector));
-                (Neuron neuronWhichFits, double[] memoryMap) = FindNeuronWithTheBestMemory(inputNeurons, learningVector);
+                (Neuron neuronWhichFits, MemoryMap memoryMap) = FindNeuronWithTheBestMemory(inputNeurons, learningVector);
                 if (neuronWhichFits == null)
                 {
                     InvokeInteractionFinished(neuronWhichFits);
                     continue;
-                } 
-
-                for(int i = 0; i < memoryMap.Length; ++i)
+                }
+                memoryMap.IsUsed = true;
+                for(int i = 0; i < memoryMap.Map.Length; ++i)
                 {
-                    memoryMap[i] = learningVector[i] * memoryMap[i];
+                    memoryMap.Map[i] = learningVector[i] * memoryMap.Map[i];
                 }
 
                 neuronWhichFits.Retrain((lastWeight, index) => {
-                    var newWeight = memoryMap[index] / (0.5 + memoryMap.MultiplyEachElementWith(learningVector).Sum());
+                    var newWeight = memoryMap.Map[index] / (0.5 + memoryMap.Map.MultiplyEachElementWith(learningVector).Sum());
                     return newWeight;
                 });
                 InvokeInteractionFinished(neuronWhichFits);
             }
         }
 
-        private (Neuron neuron, double[] memoryMap) FindNeuronWithTheBestMemory(List<Neuron> inputNeurons, IEnumerable<double> learningVector)
+        private (Neuron neuron, MemoryMap memoryMap) FindNeuronWithTheBestMemory(List<Neuron> inputNeurons, IEnumerable<double> learningVector)
         {
             foreach (var winningNeuron in inputNeurons.OrderBy(d => d.LastFitness))
             {
                 var index = inputNeurons.IndexOf(winningNeuron);
-                var memoryMap = MemoryMaps[index];
-                var inputVectorToMemorySimilarity = memoryMap.MultiplyEachElementWith(learningVector).Sum() / learningVector.Sum();
+                var memory = MemoryMaps[index];
+                if (!memory.IsUsed) continue;
+                var inputVectorToMemorySimilarityA = memory.Map.MultiplyEachElementWith(learningVector).Sum();
+                var inputVectorToMemorySimilarityB =  learningVector.Sum();
+                var inputVectorToMemorySimilarity = inputVectorToMemorySimilarityA / inputVectorToMemorySimilarityB;
                 if (inputVectorToMemorySimilarity > RequiredSimilarity)
                 {
-                    return (winningNeuron, memoryMap);
+                    return (winningNeuron, memory);
+                }
+            }
+
+            foreach (var winningNeuron in inputNeurons.OrderBy(d => d.LastFitness))
+            {
+                var index = inputNeurons.IndexOf(winningNeuron);
+                var memory = MemoryMaps[index];
+                if (memory.IsUsed) continue;
+                var inputVectorToMemorySimilarityA = memory.Map.MultiplyEachElementWith(learningVector).Sum();
+                var inputVectorToMemorySimilarityB = learningVector.Sum();
+                var inputVectorToMemorySimilarity = inputVectorToMemorySimilarityA / inputVectorToMemorySimilarityB;
+                if (inputVectorToMemorySimilarity > RequiredSimilarity)
+                {
+                    return (winningNeuron, memory);
                 }
             }
             return (null, null);
@@ -105,7 +127,7 @@ namespace SimpleSN.Core
                 var map = new double[neurone.Weights.Count];
                 for (int i = 0; i < map.Length; ++i) map[i] = 1;
 
-                MemoryMaps.Add(map);
+                MemoryMaps.Add(new MemoryMap() { Map = map, IsUsed = false }) ;
             }
         }
     }

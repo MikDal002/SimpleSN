@@ -32,6 +32,7 @@ namespace SimpleSN.GUI
         public ReactiveCommand<object> SelectDirForLearningData { get; }
 
         public ReactivePropertySlim<bool> TryDetermineSizeFromFile { get; }
+        public ReactivePropertySlim<bool> LoadFromSubdirs { get; }
         public ReactivePropertySlim<int> ImageWidth { get; }
         public ReactivePropertySlim<int> ImageHeight { get; }
 
@@ -47,6 +48,7 @@ namespace SimpleSN.GUI
             RequestedFeatures = new ReactivePropertySlim<int>(3).AddTo(Disposables);
             SimilarityThreshold = new ReactivePropertySlim<double>(0.7).AddTo(Disposables);
             TryDetermineSizeFromFile = new ReactivePropertySlim<bool>(true).AddTo(Disposables);
+            LoadFromSubdirs = new ReactivePropertySlim<bool>(false).AddTo(Disposables);
             SelectDirForLearningData = new ReactiveCommand<object>().WithSubscribe(d =>
             {
                 using System.Windows.Forms.FolderBrowserDialog dlg = new FolderBrowserDialog();
@@ -73,6 +75,7 @@ namespace SimpleSN.GUI
             Recalculate = new ReactiveCommand<object>().AddTo(Disposables).WithSubscribe(_ =>
             {
                 MakeCalculations();
+                VisibleGeneration.Value = 0;
             });
 
             InputFiles = new ReactiveCollection<BitArray2D>().AddTo(Disposables);
@@ -102,7 +105,11 @@ namespace SimpleSN.GUI
 
             InputFiles.Clear();
             bool isSizeToSet = Settings.TryDetermineSizeFromFile.Value;
-            foreach (var fileName in directory.GetFiles("*.pbm"))
+            var options = new EnumerationOptions()
+            {
+                RecurseSubdirectories = Settings.LoadFromSubdirs.Value
+                };
+            foreach (var fileName in directory.GetFiles("*.*", options))
             {
                 var image = new BitArray2D(fileName.FullName);
                 if (isSizeToSet)
@@ -150,7 +157,7 @@ namespace SimpleSN.GUI
                 AllMemoryMaps.Clear();
                 AllMemoryMaps.AddRangeOnScheduler(
                 Enumerable.Range(0, requestedFeatures)
-                          .Select(cecha => new BitArray2D((e as TrainArtNetwork).MemoryMaps[cecha], sizeOfImage)).ToList());
+                          .Select(cecha => new BitArray2D((e as TrainArtNetwork).MemoryMaps[cecha].Map, sizeOfImage)).ToList());
 
             };
             artTrainer.IterationFinished += (s, e) =>
@@ -158,7 +165,7 @@ namespace SimpleSN.GUI
                 var maps = new List<BitArray2D>();
                 foreach(var map in (s as TrainArtNetwork).MemoryMaps)
                 {
-                    maps.Add(new BitArray2D(map, sizeOfImage));
+                    maps.Add(new BitArray2D(map.Map, sizeOfImage));
                 }
                 AllMemoryMaps.AddRangeOnScheduler(maps);
             };
