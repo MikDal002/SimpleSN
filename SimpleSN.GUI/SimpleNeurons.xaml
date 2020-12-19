@@ -56,6 +56,10 @@
                     Command="{Binding RegenarateTrainData}"
                     Content="Generuj ponownie zestaw danych" />
             
+            <Button Margin="2" Padding="5,2" VerticalAlignment="Center"
+                    Command="{Binding SaveGeneratedData}"
+                    Content="Zapisz zestaw danych do pliku" />
+            
         </WrapPanel>
         <StackPanel chart:DockingManager.CanClose="False" chart:DockingManager.Header="Statystyki" DataContext="{Binding VisibleGenerationGeneration.Value}" Orientation="Vertical">
             <GroupBox DataContext="{Binding Winner}" Header="Zwyciężca">

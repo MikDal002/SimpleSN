@@ -14,8 +14,10 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -115,6 +117,7 @@ namespace SimpleSN.GUI
 
         // To use this class within your viewmodel class:
         public ReactiveCommand Start { get; }
+        public ReactiveCommand SaveGeneratedData { get; }
         public ICommand RegenarateTrainData
         {
             get
@@ -141,6 +144,18 @@ namespace SimpleSN.GUI
             AllPointsCount = new ReactivePropertySlim<int>(1000).AddTo(Disposables);
             IsStillWorking = new BusyNotifier();
             DontIntializeNeurons = new BooleanNotifier(false);
+            SaveGeneratedData = new ReactiveCommand().WithSubscribe(() => {
+                if (DataPoints.Count == 0) GenerateTrainSet();
+                StringBuilder bldr = new StringBuilder();
+                DataPoints.Aggregate(bldr, (l, r) => l.AppendLine($"{r.X};{r.Y}"));
+                using System.Windows.Forms.SaveFileDialog dlg = new SaveFileDialog();
+                dlg.FileName = "dataset.csv";
+                var result = dlg.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    System.IO.File.WriteAllText(dlg.FileName, bldr.ToString());
+                }
+            }).AddTo(Disposables);
             Start = new ReactiveCommand(IsStillWorking.Select(d => !d))
                 .WithSubscribe(async () =>
             {
