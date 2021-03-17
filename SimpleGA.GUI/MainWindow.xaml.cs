@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,16 +32,19 @@ namespace SimpleGA.GUI
             var crossover = new OrderedCrossover();
             var mutation = new ReverseSequenceMutation();
             var fitness = new MyProblemFitness();
-            var chromosome = new MyProblemChromosome();
-            var population = new Population(50, 70, chromosome);
+            var population = new Population<MyProblemChromosome>(50, 70, new MyProblemChromosomeFactory());
 
-            var ga = new GeneticAlgorithm(population, fitness, selection, crossover, mutation);
+            var ga = new GeneticAlgorithm<MyProblemChromosome>(population, fitness, selection, crossover, mutation);
             ga.Termination = new GenerationNumberTermination(100);
 
-            Console.WriteLine("GA running...");
+            ga.GenerationHasGone += (sender, generation) =>
+                Debug.WriteLine(
+                    $"Generację {(sender as IGeneticAlgorithm).GenerationsNumber} wygrał {generation.BestChromosome} z dopasowaniem {generation.BestChromosome.Fitness}.");
+
+            Debug.WriteLine("GA running...");
             ga.Start();
 
-            Console.WriteLine("Best solution found has {0} fitness.", ga.BestChromosome.Fitness);
+            Debug.WriteLine("Best solution found has {0} fitness ({1}).", ga.BestChromosome.Fitness, ga.BestChromosome);
         }
     }
 }
