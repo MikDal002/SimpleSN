@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace SimpleGA.Core
 {
-    public class SinglePointCrossover : ICrossover<MyProblemChromosome>
+    public class MyProblemChromosomeCrossover : ICrossover<MyProblemChromosome>
     {
         /// <inheritdoc />
         public int RequiredNumberOfParents { get; }
 
-        public SinglePointCrossover(int requiredNumberOfParents = 2)
+        public MyProblemChromosomeCrossover(int requiredNumberOfParents = 2)
         {
             RequiredNumberOfParents = requiredNumberOfParents;
         }

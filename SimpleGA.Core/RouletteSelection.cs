@@ -25,22 +25,21 @@ namespace SimpleGA.Core
                 parentThresholds.Add(rnd.NextDouble() * sumOfFitnesse);
             }
 
-            var minimumParentThreshold = parentThresholds.Min();
+            parentThresholds = parentThresholds.OrderBy(d => d).ToList();
+
+            var minimumParentThreshold = parentThresholds[0];
 
             var selectionProgress = 0.0;
             foreach (var chrom in previousGeneration)
             {
                 selectionProgress += chrom.Fitness!.Value;
                 if (minimumParentThreshold > selectionProgress) continue;
-                if (parentThresholds.Count == 0) yield break;
 
-                var wasAnyParentInvoked = parentThresholds.FirstOrDefault(d => d < selectionProgress);
-                if (wasAnyParentInvoked != default)
-                {
-                    var result = parentThresholds.Remove(wasAnyParentInvoked);
-                    Debug.Assert(result);
-                    yield return chrom;
-                }
+                parentThresholds.RemoveAt(0);
+                yield return chrom;
+                
+                if (parentThresholds.Count == 0) yield break;
+                minimumParentThreshold = parentThresholds[0];
             }
         }
     }
