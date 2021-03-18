@@ -28,18 +28,23 @@ namespace SimpleGA.GUI
 
             // FInd the best solution for \sqrt((x1-x2)^2 + (y1 - y2)^)
 
-            var selection = new EliteSelection();
-            var crossover = new OrderedCrossover();
-            var mutation = new ReverseSequenceMutation();
+            var selection = new RouletteSelection();
+            var crossover = new SinglePointCrossover();
+            var mutation = new GenerateCompletelyNewValuesMutation();
             var fitness = new MyProblemFitness();
-            var population = new Population<MyProblemChromosome>(50, 70, new MyProblemChromosomeFactory());
+            var population = new Population<MyProblemChromosome>(1000, 2000, new MyProblemChromosomeFactory(), crossover, mutation, selection);
 
-            var ga = new GeneticAlgorithm<MyProblemChromosome>(population, fitness, selection, crossover, mutation);
-            ga.Termination = new GenerationNumberTermination(100);
+            var ga = new GeneticAlgorithm<MyProblemChromosome>(population, fitness);
+            ga.Termination = new GenerationNumberTermination(1000);
 
+            MyProblemChromosome previousWinner = null;
             ga.GenerationHasGone += (sender, generation) =>
+            {
+                if (generation.BestChromosome == previousWinner) return;
+                previousWinner = generation.BestChromosome;
                 Debug.WriteLine(
                     $"Generację {(sender as IGeneticAlgorithm).GenerationsNumber} wygrał {generation.BestChromosome} z dopasowaniem {generation.BestChromosome.Fitness}.");
+            };
 
             Debug.WriteLine("GA running...");
             ga.Start();

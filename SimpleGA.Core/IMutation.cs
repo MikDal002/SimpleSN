@@ -1,7 +1,8 @@
-﻿namespace SimpleGA.Core
+﻿#nullable enable
+namespace SimpleGA.Core
 {
-    public interface IMutation
+    public interface IMutation<T> where T : IChromosome
     {
-
+        T? Mutate(T offspring);
     }
 }

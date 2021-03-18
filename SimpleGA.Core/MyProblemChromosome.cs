@@ -17,7 +17,7 @@ namespace SimpleGA.Core
         {
             var random = new Random();
             var min = 1;
-            var max = 1000;
+            var max = 10000;
             X1 = x1 ?? random.Next(min, max);
             X2 = x2 ?? random.Next(min, max);
             Y1 = y1 ?? random.Next(min, max);

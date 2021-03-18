@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace SimpleGA.Core
 {
-    public class Generation<T> : IReadOnlyCollection<T> where T : IChromosome
+    public class Generation<T> : IReadOnlyList<T> where T : IChromosome
     {
-        private readonly IReadOnlyCollection<T> _readOnlyCollectionImplementation;
+        private readonly IReadOnlyList<T> _readOnlyCollectionImplementation;
 
         public T BestChromosome { get; set; }
-        public Generation(IReadOnlyCollection<T> list)
+        public Generation(IReadOnlyList<T> list)
         {
             _readOnlyCollectionImplementation = list;
         }
@@ -28,5 +28,7 @@ namespace SimpleGA.Core
         /// <inheritdoc />
         public int Count => _readOnlyCollectionImplementation.Count;
 
+        /// <inheritdoc />
+        public T this[int index] => _readOnlyCollectionImplementation[index];
     }
 }

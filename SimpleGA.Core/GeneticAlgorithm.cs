@@ -12,22 +12,15 @@ namespace SimpleGA.Core
 
         public IPopulation<T> Population { get; }
         public IFitness<T> Fitness { get; }
-        public ISelection Selection { get; }
-        public ICrossover Crossover { get; }
-        public IMutation Mutation { get; }
 
         public ITermination Termination { get; set; }
 
         public T BestChromosome { get; private set; }
 
-        public GeneticAlgorithm(IPopulation<T> population, IFitness<T> fitness, ISelection selection, ICrossover crossover,
-            IMutation mutation)
+        public GeneticAlgorithm(IPopulation<T> population, IFitness<T> fitness)
         {
             Population = population ?? throw new ArgumentNullException(nameof(population));
             Fitness = fitness ?? throw new ArgumentNullException(nameof(fitness));
-            Selection = selection ?? throw new ArgumentNullException(nameof(selection));
-            Crossover = crossover ?? throw new ArgumentNullException(nameof(crossover));
-            Mutation = mutation ?? throw new ArgumentNullException(nameof(mutation));
         }
 
         public void Start()
@@ -48,7 +41,7 @@ namespace SimpleGA.Core
                     
 
                     if (bestChromosomeInGeneration == null) bestChromosomeInGeneration = chromosome;
-                    else if (bestChromosomeInGeneration.Fitness > chromosome.Fitness)
+                    else if (bestChromosomeInGeneration.Fitness < chromosome.Fitness)
                         bestChromosomeInGeneration = chromosome;
                 }
 
