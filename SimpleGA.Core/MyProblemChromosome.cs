@@ -1,27 +1,72 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SimpleGA.Core
 {
-    public class MyProblemChromosome : IChromosome
+    public interface IGenableChromosome<T> : IChromosome
     {
-        public double X1 { get; private set; }
-        public double X2 { get; private set; }
-        public double Y1 { get; private set; }
-        public double Y2 { get; private set; }
+        public IReadOnlyList<T> Genes { get; }
+
+        IChromosome FromGenes(IList<T> genes);
+    }
+    public class MyProblemChromosome : IGenableChromosome<double>
+    {
+        private readonly List<double> _genes = new List<double>();
+        static Random random = new Random();
+        static int min = 1;
+        static int max = 10000;
+
+        /// <inheritdoc />
+        public IReadOnlyList<double> Genes => _genes;
+
+        /// <inheritdoc />
+        public IChromosome FromGenes(IList<double> genes)
+        {
+            return new MyProblemChromosome(genes);
+        }
+
+        public double X1
+        {
+            get => _genes[0];
+            set => _genes[0] = value;
+        }
+        public double X2
+        {
+            get => _genes[1];
+            set => _genes[1] = value;
+        }
+        public double Y1
+        {
+            get => _genes[2];
+            set => _genes[2] = value;
+        }
+        public double Y2
+        {
+            get => _genes[3];
+            set => _genes[3] = value;
+        }
 
         /// <inheritdoc />
         public double? Fitness { get; set; }
 
-
-        public MyProblemChromosome(double? x1, double? x2, double? y1, double? y2)
+        private MyProblemChromosome(IList<double> genes)
         {
-            var random = new Random();
-            var min = 1;
-            var max = 10000;
-            X1 = x1 ?? random.Next(min, max);
-            X2 = x2 ?? random.Next(min, max);
-            Y1 = y1 ?? random.Next(min, max);
-            Y2 = y2 ?? random.Next(min, max);
+            if (genes.Count != 4) throw new ArgumentException();
+            if (genes.Any(d => d > max || d < min)) throw new ArgumentException();
+            _genes = genes as List<double> ?? genes.ToList();
+        }
+
+        public MyProblemChromosome(double? x1, double? x2, double? y1, double? y2) : this(new List<double>()
+        {
+            x1 ?? random.Next(min, max),
+            x2 ?? random.Next(min, max),
+            y1 ?? random.Next(min, max),
+            y2 ?? random.Next(min, max)
+        })
+        {
+
+
         }
 
         /// <inheritdoc />
