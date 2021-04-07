@@ -23,7 +23,7 @@ namespace SimpleGA.GUI
                 //var crossover = new UniformCrossover<MyProblemChromosome, double>(chromosomeFactory);
                 //var crossover = new SinglePointCrossover<MyProblemChromosome, double>(chromosomeFactory);
                 var crossover = new MultiPointCrossover<MyProblemChromosome, double>(2, chromosomeFactory);
-                var mutation = new GenerateCompletelyNewValuesMutation();
+                var mutation = new RandomResettingMutation<MyProblemChromosome, double>(chromosomeFactory);
                 var fitness = new MyProblemFitness();
                 var population = new Population<MyProblemChromosome>(1000, 2000, chromosomeFactory, crossover, mutation, selection);
 
