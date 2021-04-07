@@ -4,18 +4,9 @@ using System.Linq;
 
 namespace SimpleGA.Core
 {
-    public interface IGenableChromosome<T> : IChromosome
-    {
-        public IReadOnlyList<T> Genes { get; }
-
-        IChromosome FromGenes(IList<T> genes);
-    }
     public class MyProblemChromosome : IGenableChromosome<double>
     {
         private readonly List<double> _genes = new List<double>();
-        static Random random = new Random();
-        static int min = 1;
-        static int max = 10000;
 
         /// <inheritdoc />
         public IReadOnlyList<double> Genes => _genes;
@@ -50,19 +41,19 @@ namespace SimpleGA.Core
         /// <inheritdoc />
         public double? Fitness { get; set; }
 
-        private MyProblemChromosome(IList<double> genes)
+        public MyProblemChromosome(IList<double> genes)
         {
             if (genes.Count != 4) throw new ArgumentException();
-            if (genes.Any(d => d > max || d < min)) throw new ArgumentException();
+            //if (genes.Any(d => d > max || d < min)) throw new ArgumentException();
             _genes = genes as List<double> ?? genes.ToList();
         }
 
-        public MyProblemChromosome(double? x1, double? x2, double? y1, double? y2) : this(new List<double>()
+        public MyProblemChromosome(double x1, double x2, double y1, double y2) : this(new List<double>()
         {
-            x1 ?? random.Next(min, max),
-            x2 ?? random.Next(min, max),
-            y1 ?? random.Next(min, max),
-            y2 ?? random.Next(min, max)
+            x1,
+            x2,
+            y1,
+            y2
         })
         {
 
