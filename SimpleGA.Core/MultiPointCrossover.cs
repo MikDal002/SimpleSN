@@ -21,7 +21,7 @@ namespace SimpleGA.Core
         /// <inheritdoc />
         public IEnumerable<T> MakeChildren(IEnumerable<T> parents)
         {
-            var list = parents.Take(RequiredNumberOfParents).ToList();
+            var list = parents.ToList();
             if (list.Count != RequiredNumberOfParents)
                 throw new ArgumentException("The number of parents isn't sufficient", nameof(parents));
             if (list[0].Genes.Count != list[1].Genes.Count)
