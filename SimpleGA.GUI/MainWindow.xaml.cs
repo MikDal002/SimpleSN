@@ -1,20 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SimpleGA.Core;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using SimpleGA.Core;
 
 namespace SimpleGA.GUI
 {
@@ -31,10 +18,12 @@ namespace SimpleGA.GUI
             var worker = new Thread(() =>
             {
                 var selection = new RouletteSelection();
-                var crossover = new MyProblemChromosomeCrossover();
+                //var crossover = new MyProblemChromosomeCrossover();
+                var chromosomeFactory = new MyProblemChromosomeFactory();
+                var crossover = new UniformCrossover<MyProblemChromosome, double>(chromosomeFactory);
                 var mutation = new GenerateCompletelyNewValuesMutation();
                 var fitness = new MyProblemFitness();
-                var population = new Population<MyProblemChromosome>(1000, 2000, new MyProblemChromosomeFactory(), crossover, mutation, selection);
+                var population = new Population<MyProblemChromosome>(1000, 2000, chromosomeFactory, crossover, mutation, selection);
 
                 var ga = new GeneticAlgorithm<MyProblemChromosome>(population, fitness);
                 ga.Termination = new GenerationNumberTermination(1000);
@@ -42,7 +31,12 @@ namespace SimpleGA.GUI
                 MyProblemChromosome previousWinner = null;
                 ga.GenerationHasGone += (sender, generation) =>
                 {
-                    if (generation.BestChromosome == previousWinner) return;
+                    if (generation.BestChromosome == previousWinner)
+                    {
+                        Debug.Write("."); 
+                        return;
+                    }
+                    Debug.WriteLine("");
                     previousWinner = generation.BestChromosome;
                     Debug.WriteLine(
                         $"Generację {(sender as IGeneticAlgorithm).GenerationsNumber} wygrał {generation.BestChromosome} z dopasowaniem {generation.BestChromosome.Fitness}.");

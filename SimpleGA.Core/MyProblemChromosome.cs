@@ -4,12 +4,6 @@ using System.Linq;
 
 namespace SimpleGA.Core
 {
-    public interface IGenableChromosome<T> : IChromosome
-    {
-        public IReadOnlyList<T> Genes { get; }
-
-        IChromosome FromGenes(IList<T> genes);
-    }
     public class MyProblemChromosome : IGenableChromosome<double>
     {
         private readonly List<double> _genes = new List<double>();
@@ -50,7 +44,7 @@ namespace SimpleGA.Core
         /// <inheritdoc />
         public double? Fitness { get; set; }
 
-        private MyProblemChromosome(IList<double> genes)
+        public MyProblemChromosome(IList<double> genes)
         {
             if (genes.Count != 4) throw new ArgumentException();
             if (genes.Any(d => d > max || d < min)) throw new ArgumentException();
