@@ -21,7 +21,8 @@ namespace SimpleGA.GUI
                 var chromosomeFactory = new MyProblemChromosomeFactory();
                 //var crossover = new MyProblemChromosomeCrossover();
                 //var crossover = new UniformCrossover<MyProblemChromosome, double>(chromosomeFactory);
-                var crossover = new SinglePointCrossOver<MyProblemChromosome, double>(chromosomeFactory);
+                //var crossover = new SinglePointCrossover<MyProblemChromosome, double>(chromosomeFactory);
+                var crossover = new MultiPointCrossover<MyProblemChromosome, double>(2, chromosomeFactory);
                 var mutation = new GenerateCompletelyNewValuesMutation();
                 var fitness = new MyProblemFitness();
                 var population = new Population<MyProblemChromosome>(1000, 2000, chromosomeFactory, crossover, mutation, selection);
@@ -46,7 +47,7 @@ namespace SimpleGA.GUI
                 Debug.WriteLine("GA running...");
                 ga.Start();
 
-                Debug.WriteLine("Best solution found has {0} fitness ({1}).", ga.BestChromosome.Fitness, ga.BestChromosome);
+                Debug.WriteLine("\r\nBest solution found has {0} fitness ({1}).", ga.BestChromosome.Fitness, ga.BestChromosome);
             });
             worker.Start();
         }
