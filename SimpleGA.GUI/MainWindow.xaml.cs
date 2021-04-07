@@ -7,6 +7,7 @@ namespace SimpleGA.GUI
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
+    /// Salesman dataset: https://people.sc.fsu.edu/~jburkardt/datasets/tsp/tsp.html
     /// </summary>
     public partial class MainWindow : Window
     {
