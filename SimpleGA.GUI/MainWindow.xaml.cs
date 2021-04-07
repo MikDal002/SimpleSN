@@ -18,9 +18,10 @@ namespace SimpleGA.GUI
             var worker = new Thread(() =>
             {
                 var selection = new RouletteSelection();
-                //var crossover = new MyProblemChromosomeCrossover();
                 var chromosomeFactory = new MyProblemChromosomeFactory();
-                var crossover = new UniformCrossover<MyProblemChromosome, double>(chromosomeFactory);
+                //var crossover = new MyProblemChromosomeCrossover();
+                //var crossover = new UniformCrossover<MyProblemChromosome, double>(chromosomeFactory);
+                var crossover = new SinglePointCrossOver<MyProblemChromosome, double>(chromosomeFactory);
                 var mutation = new GenerateCompletelyNewValuesMutation();
                 var fitness = new MyProblemFitness();
                 var population = new Population<MyProblemChromosome>(1000, 2000, chromosomeFactory, crossover, mutation, selection);
