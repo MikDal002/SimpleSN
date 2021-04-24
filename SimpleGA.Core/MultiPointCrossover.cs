@@ -7,7 +7,7 @@ namespace SimpleGA.Core
     public class MultiPointCrossover<T, E> : ICrossover<T> where T : IGenableChromosome<E>
     {
         private readonly int _amountOfPoints;
-        private IGenableChromosomeFactory<T, E> _factory;
+        private readonly IGenableChromosomeFactory<T, E> _factory;
 
         public MultiPointCrossover(int amountOfPoints, IGenableChromosomeFactory<T, E> factory)
         {

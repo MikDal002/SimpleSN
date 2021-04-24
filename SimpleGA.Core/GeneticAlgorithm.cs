@@ -48,7 +48,8 @@ namespace SimpleGA.Core
                 currentGeneration.BestChromosome = bestChromosomeInGeneration;
 
                 if (BestChromosome == null) BestChromosome = bestChromosomeInGeneration;
-                else if (bestChromosomeInGeneration!.Fitness > BestChromosome.Fitness)
+                //else if (bestChromosomeInGeneration!.Fitness > BestChromosome.Fitness)
+                else if (bestChromosomeInGeneration.CompareTo(BestChromosome) > 1)
                     BestChromosome = bestChromosomeInGeneration;
 
                 GenerationHasGone?.Invoke(this, currentGeneration);

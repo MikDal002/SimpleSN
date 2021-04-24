@@ -1,10 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace SimpleGA.Core
 {
-    public class MyProblemChromosome : IGenableChromosome<double>
+    public class City
+    {
+        public string Name { get; set; }
+        public PointF Location { get; set; }
+    }
+
+    public class TravelerProblemChromosome : FitnessComparableChromosome, IGenableChromosome<City>
+    {
+        private readonly List<City> _genes;
+
+        public TravelerProblemChromosome(IEnumerable<City> cities)
+        {
+            _genes = cities.ToList();
+        }
+
+        public double TotalPath { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<City> Genes => _genes;
+
+        /// <inheritdoc />
+        public int CompareTo(object? obj)
+        {
+            return -base.CompareTo(obj);
+           
+        }
+    }
+
+    public class MyProblemChromosome : FitnessComparableChromosome, IGenableChromosome<double>
     {
         private readonly List<double> _genes = new List<double>();
 
@@ -37,9 +66,6 @@ namespace SimpleGA.Core
             get => _genes[3];
             set => _genes[3] = value;
         }
-
-        /// <inheritdoc />
-        public double? Fitness { get; set; }
 
         public MyProblemChromosome(IList<double> genes)
         {
