@@ -9,6 +9,7 @@ namespace SimpleGA.Core
         private readonly IReadOnlyList<T> _readOnlyCollectionImplementation;
 
         public T BestChromosome { get; set; }
+
         public Generation(IReadOnlyList<T> list)
         {
             _readOnlyCollectionImplementation = list;
@@ -23,7 +24,7 @@ namespace SimpleGA.Core
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable)_readOnlyCollectionImplementation).GetEnumerator();
+            return ((IEnumerable) _readOnlyCollectionImplementation).GetEnumerator();
         }
 
         /// <inheritdoc />

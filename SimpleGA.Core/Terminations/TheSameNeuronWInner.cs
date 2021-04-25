@@ -4,25 +4,26 @@ namespace SimpleGA.Core.Terminations
 {
     public class TheSameNeuronWInner : ITermination
     {
+        public long AmountLastNeruonWins { get; private set; } = 0;
         private IChromosome _lastKnwonWinner = null;
-        private long _amountOfWins = 0;
+
+        public long MaxGenerationsCount { get; }
 
         public TheSameNeuronWInner(long maxGenerationsCount)
         {
             MaxGenerationsCount = maxGenerationsCount;
         }
 
-        public long MaxGenerationsCount { get; }
         /// <inheritdoc />
         public bool HasReached(IGeneticAlgorithm geneticAlgorithm)
         {
             if (_lastKnwonWinner != geneticAlgorithm.BestChromosome)
             {
-                _amountOfWins = 0;
+                AmountLastNeruonWins = 0;
                 _lastKnwonWinner = geneticAlgorithm.BestChromosome;
             }
 
-            return (MaxGenerationsCount < ++_amountOfWins);
+            return MaxGenerationsCount < ++AmountLastNeruonWins;
         }
     }
 }

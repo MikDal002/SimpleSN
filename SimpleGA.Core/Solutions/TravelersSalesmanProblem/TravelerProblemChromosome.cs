@@ -9,33 +9,30 @@ namespace SimpleGA.Core.Solutions.MyProblem
     {
         private readonly List<City> _genes;
 
-        public TravelerProblemChromosome(IEnumerable<City> cities)
-        {
-            _genes = cities.ToList();
-        }
-
         public double TotalPath { get; set; }
 
         /// <inheritdoc />
         public IReadOnlyList<City> Genes => _genes;
 
-        /// <inheritdoc />
-        public int CompareTo(object? obj)
+        public TravelerProblemChromosome(IEnumerable<City> cities)
         {
-            return -base.CompareTo(obj);
+            _genes = cities.ToList();
         }
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
             int hash = 1;
-            foreach (var gen in _genes)
-            {
-                hash = HashCode.Combine(hash, gen.GetHashCode());
-            }
+            foreach (var gen in _genes) hash = HashCode.Combine(hash, gen.GetHashCode());
 
             return hash;
+        }
 
+
+        /// <inheritdoc />
+        public int CompareTo(object? obj)
+        {
+            return -base.CompareTo(obj);
         }
     }
 }

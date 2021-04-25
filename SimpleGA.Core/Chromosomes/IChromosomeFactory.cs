@@ -2,7 +2,7 @@
 
 namespace SimpleGA.Core.Chromosomes
 {
-    public interface IGenableChromosomeFactory <T,E> : IChromosomeFactory<T> where T : IGenableChromosome<E>
+    public interface IGenableChromosomeFactory<T, E> : IChromosomeFactory<T> where T : IGenableChromosome<E>
     {
         T FromGenes(IList<E> genes);
         E GetGene(int geneNumber);

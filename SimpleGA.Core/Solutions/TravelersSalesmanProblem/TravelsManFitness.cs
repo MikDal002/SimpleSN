@@ -6,7 +6,6 @@ namespace SimpleGA.Core.Solutions.TravelersSalesmanProblem
 {
     public class TravelsManFitness : IFitness<TravelerProblemChromosome>
     {
-        
         /// <inheritdoc />
         public double Evaluate(TravelerProblemChromosome chromosome)
         {
@@ -23,6 +22,5 @@ namespace SimpleGA.Core.Solutions.TravelersSalesmanProblem
 
             return sum;
         }
-
     }
 }

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using SimpleGA.Core;
 using System.Diagnostics;
 using System.Linq;
@@ -48,7 +49,8 @@ namespace SimpleGA.GUI
                 var mutation = new SwapMutation<TravelerProblemChromosome, City>(chromosomeFactory);
                 var population = new Population<TravelerProblemChromosome>(1000, 2000, chromosomeFactory, crossover, mutation, selection);
                 var ga = new GeneticAlgorithm<TravelerProblemChromosome>(population, fitness);
-                ga.Termination = new GenerationNumberTermination(10000);
+                var termination = new GenerationNumberTermination(10000);
+                ga.Termination = termination;
 
                 IChromosome previousWinner = null;
                 ga.GenerationHasGone += (sender, generation) =>
@@ -63,16 +65,28 @@ namespace SimpleGA.GUI
                     Debug.WriteLine(
                         $"Generację {(sender as IGeneticAlgorithm).GenerationsNumber} wygrał {generation.BestChromosome} z ścieżką {generation.BestChromosome.TotalPath}.");
                     Debug.WriteLine(JsonConvert.SerializeObject(generation.BestChromosome.Genes.Select(d => d.Name)));
+                    mutation.MutationThreshold =
+                        ga.GenerationsNumber / (double) termination.MaxGenerationsCount + 0.1;
+                    mutation.AmountOfSwaps = (ga.GenerationsNumber + 1) % 100;
                 };
 
                 Debug.WriteLine("GA running...");
                 ga.Start();
 
                 Debug.WriteLine("\r\nBest solution found has {0} path ({1}).", ga.BestChromosome.Fitness, ga.BestChromosome.TotalPath);
+                Debug.WriteLine(
+                    $"Wygenerowano {chromosomeFactory.Counter} chromosomów vs {silnia2(chromosomeFactory.AllCities.Count)} wszystkich możliwości.");
                 Debug.WriteLine(JsonConvert.SerializeObject(ga.BestChromosome.Genes.Select(d => d.Name)));
             }
             //);
             //worker.Start();
+        }
+
+        private double silnia2(int n)
+        {
+            double result = 1;
+            for (int i = 1; i <= n; i++) result *= i;
+            return result;
         }
     }
 }

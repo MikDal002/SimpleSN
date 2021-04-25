@@ -9,8 +9,10 @@ namespace SimpleGA.Core.Selections
     {
         private readonly Random _random = new();
         public bool? IsReversed { get; set; } = null;
+
         /// <inheritdoc />
-        public IEnumerable<T> SelectChromosomes<T>(Generation<T> previousGeneration, int requiredNumberOfParents) where T : IChromosome
+        public IEnumerable<T> SelectChromosomes<T>(Generation<T> previousGeneration, int requiredNumberOfParents)
+            where T : IChromosome
         {
             if (IsReversed == null)
             {
@@ -34,9 +36,7 @@ namespace SimpleGA.Core.Selections
             var parentThresholds = new List<double>(requiredNumberOfParents);
 
             for (int i = 0; i < requiredNumberOfParents; ++i)
-            {
                 parentThresholds.Add(_random.NextDouble() * sumOfFitnesse);
-            }
 
             parentThresholds = parentThresholds.OrderBy(d => d).ToList();
 

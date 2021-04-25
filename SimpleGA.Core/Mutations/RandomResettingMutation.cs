@@ -4,7 +4,7 @@ using SimpleGA.Core.Chromosomes;
 
 namespace SimpleGA.Core.Mutations
 {
-    public class RandomResettingMutation<T,E> : BaseMutation<T> where T : IGenableChromosome<E>
+    public class RandomResettingMutation<T, E> : BaseMutation<T> where T : IGenableChromosome<E>
     {
         private readonly IGenableChromosomeFactory<T, E> _factory;
 

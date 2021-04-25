@@ -47,6 +47,5 @@ namespace SimpleGA.Core.Crossovers
             yield return _factory.FromGenes(childGenes1);
             yield return _factory.FromGenes(childGenes2);
         }
-
     }
 }

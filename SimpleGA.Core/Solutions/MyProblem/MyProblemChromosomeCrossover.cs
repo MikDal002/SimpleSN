@@ -6,13 +6,13 @@ namespace SimpleGA.Core.Solutions.MyProblem
 {
     public class MyProblemChromosomeCrossover : ICrossover<MyProblemChromosome>
     {
-        /// <inheritdoc />
-        public int RequiredNumberOfParents { get; }
-
         public MyProblemChromosomeCrossover(int requiredNumberOfParents = 2)
         {
             RequiredNumberOfParents = requiredNumberOfParents;
         }
+
+        /// <inheritdoc />
+        public int RequiredNumberOfParents { get; }
 
         /// <inheritdoc />
         public IEnumerable<MyProblemChromosome> MakeChildren(IEnumerable<MyProblemChromosome> parents)

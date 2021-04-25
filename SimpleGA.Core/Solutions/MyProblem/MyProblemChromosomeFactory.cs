@@ -6,9 +6,9 @@ namespace SimpleGA.Core.Solutions.MyProblem
 {
     public class MyProblemChromosomeFactory : IGenableChromosomeFactory<MyProblemChromosome, double>
     {
-        static readonly Random random = new Random();
-        static readonly int min = 1;
-        static readonly int max = 10000;
+        private static readonly Random random = new Random();
+        private static readonly int min = 1;
+        private static readonly int max = 10000;
 
         /// <inheritdoc />
         public MyProblemChromosome CreateNew()

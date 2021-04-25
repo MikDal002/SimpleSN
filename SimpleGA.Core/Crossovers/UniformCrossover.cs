@@ -9,13 +9,13 @@ namespace SimpleGA.Core.Crossovers
     {
         private readonly IGenableChromosomeFactory<T, E> _factory;
 
-        /// <inheritdoc />
-        public int RequiredNumberOfParents => 2;
-
         public UniformCrossover(IGenableChromosomeFactory<T, E> factory)
         {
             _factory = factory;
         }
+
+        /// <inheritdoc />
+        public int RequiredNumberOfParents => 2;
 
         /// <inheritdoc />
         public IEnumerable<T> MakeChildren(IEnumerable<T> parents)

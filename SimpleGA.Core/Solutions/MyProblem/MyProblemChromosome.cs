@@ -9,30 +9,24 @@ namespace SimpleGA.Core.Solutions.MyProblem
     {
         private readonly List<double> _genes = new List<double>();
 
-        /// <inheritdoc />
-        public IReadOnlyList<double> Genes => _genes;
-
-        /// <inheritdoc />
-        public IChromosome FromGenes(IList<double> genes)
-        {
-            return new MyProblemChromosome(genes);
-        }
-
         public double X1
         {
             get => _genes[0];
             set => _genes[0] = value;
         }
+
         public double X2
         {
             get => _genes[1];
             set => _genes[1] = value;
         }
+
         public double Y1
         {
             get => _genes[2];
             set => _genes[2] = value;
         }
+
         public double Y2
         {
             get => _genes[3];
@@ -46,7 +40,7 @@ namespace SimpleGA.Core.Solutions.MyProblem
             _genes = genes as List<double> ?? genes.ToList();
         }
 
-        public MyProblemChromosome(double x1, double x2, double y1, double y2) : this(new List<double>()
+        public MyProblemChromosome(double x1, double x2, double y1, double y2) : this(new List<double>
         {
             x1,
             x2,
@@ -54,8 +48,12 @@ namespace SimpleGA.Core.Solutions.MyProblem
             y2
         })
         {
+        }
 
-
+        /// <inheritdoc />
+        public IChromosome FromGenes(IList<double> genes)
+        {
+            return new MyProblemChromosome(genes);
         }
 
         /// <inheritdoc />
@@ -63,5 +61,8 @@ namespace SimpleGA.Core.Solutions.MyProblem
         {
             return $"{X1}x{X2};{Y1}x{Y2}";
         }
+
+        /// <inheritdoc />
+        public IReadOnlyList<double> Genes => _genes;
     }
 }

@@ -7,7 +7,7 @@ namespace SimpleGA.Core.Crossovers
 {
     public class OrderedCrossover<T, E> : ICrossover<T> where T : IGenableChromosome<E>
     {
-        private readonly IGenableChromosomeFactory<T,E> _factory;
+        private readonly IGenableChromosomeFactory<T, E> _factory;
 
         public OrderedCrossover(IGenableChromosomeFactory<T, E> chromosomeFactory)
         {
@@ -29,15 +29,15 @@ namespace SimpleGA.Core.Crossovers
             var maxCount = parents[0].Genes.Count;
             var random = new Random();
 
-            
+
             var begining = random.Next((maxCount - 1) / 2);
             var end = random.Next(begining, maxCount - 1);
 
             var child1PrimeGenes = parents[0].Genes.Skip(begining).Take(end - begining).ToList();
             var child2PrimeGenes = parents[1].Genes.Skip(begining).Take(end - begining).ToList();
 
-            Func<IEnumerable<E>> parent1FilteredGens =() => parents[0].Genes.Where(d => !child2PrimeGenes.Contains(d));
-            Func<IEnumerable<E>> parent2FilteredGens =() => parents[1].Genes.Where(d => !child1PrimeGenes.Contains(d));
+            Func<IEnumerable<E>> parent1FilteredGens = () => parents[0].Genes.Where(d => !child2PrimeGenes.Contains(d));
+            Func<IEnumerable<E>> parent2FilteredGens = () => parents[1].Genes.Where(d => !child1PrimeGenes.Contains(d));
 
             var child1Genes =
                 parent2FilteredGens().Take(begining)

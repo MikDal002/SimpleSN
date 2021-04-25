@@ -12,10 +12,7 @@ namespace SimpleGA.Core.Solutions.MyProblem
         public override bool Equals(object? obj)
         {
             if (this == obj) return true;
-            if (obj is City city)
-            {
-                return Equals(city);
-            }
+            if (obj is City city) return Equals(city);
 
             throw new ArgumentException(nameof(obj));
         }

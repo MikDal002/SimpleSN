@@ -39,12 +39,6 @@ namespace SimpleGA.Core.Tests
                 }
             }
         }
-
-        [Test]
-        public void Test2()
-        {
-            
-        }
     }
 
     public class IntArrayOrderedChromosomeFactory : IGenableChromosomeFactory<IntArrayChromosome, int>
@@ -71,7 +65,7 @@ namespace SimpleGA.Core.Tests
         /// <inheritdoc />
         public int GetGene(int geneNumber)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 
