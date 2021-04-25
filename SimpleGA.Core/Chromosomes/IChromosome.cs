@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SimpleGA.Core
+namespace SimpleGA.Core.Chromosomes
 {
     public interface IChromosome : IComparable
     {

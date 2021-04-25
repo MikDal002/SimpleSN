@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
+using SimpleGA.Core.Chromosomes;
 
-namespace SimpleGA.Core
+namespace SimpleGA.Core.Mutations
 {
     public class RandomResettingMutation<T,E> : BaseMutation<T> where T : IGenableChromosome<E>
     {

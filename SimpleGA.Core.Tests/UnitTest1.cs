@@ -1,9 +1,11 @@
 using NUnit.Framework;
-using SimpleGA.GUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using SimpleGA.Core.Chromosomes;
+using SimpleGA.Core.Crossovers;
+using SimpleGA.Core.Extensions;
 
 namespace SimpleGA.Core.Tests
 {
@@ -36,6 +38,11 @@ namespace SimpleGA.Core.Tests
                     kid.Genes.Should().IntersectWith(parent.Genes);
                 }
             }
+        }
+
+        [Test]
+        public void Test2()
+        {
             
         }
     }

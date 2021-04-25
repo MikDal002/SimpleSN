@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using SimpleGA.Core.Chromosomes;
 
-namespace SimpleGA.Core
+namespace SimpleGA.Core.MyProblem
 {
     public class MyProblemChromosomeFactory : IGenableChromosomeFactory<MyProblemChromosome, double>
     {

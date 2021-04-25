@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using SimpleGA.Core;
+using SimpleGA.Core.Chromosomes;
 
-namespace SimpleGA.GUI
+namespace SimpleGA.Core.Crossovers
 {
     public class OrderedCrossover<T, E> : ICrossover<T> where T : IGenableChromosome<E>
     {

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using SimpleGA.Core.Crossovers;
 
-namespace SimpleGA.Core
+namespace SimpleGA.Core.MyProblem
 {
     public class MyProblemChromosomeCrossover : ICrossover<MyProblemChromosome>
     {

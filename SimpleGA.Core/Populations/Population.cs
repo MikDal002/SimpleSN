@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using SimpleGA.Core.Chromosomes;
+using SimpleGA.Core.Crossovers;
+using SimpleGA.Core.Mutations;
+using SimpleGA.Core.Selections;
 
-namespace SimpleGA.Core
+namespace SimpleGA.Core.Populations
 {
     public class Population<T> : IPopulation<T> where T : IChromosome
     {
@@ -37,7 +41,8 @@ namespace SimpleGA.Core
                 {
                     chromosomesForPopulation.Add(_adamFactory.CreateNew());
                 }
-            } else
+            }
+            else
             {
                 // TODO MD 24-04-2021:  This shouldn't be hardcoded!
                 chromosomesForPopulation.Add(_previousGeneration.BestChromosome);
@@ -50,8 +55,8 @@ namespace SimpleGA.Core
                         Debug.WriteLine($"Amount of parents isn't sufficient ({parents.Count} vs {_crossover.RequiredNumberOfParents})!");
                         continue;
                     }
-                    ;
-                    var offsprings = _crossover.MakeChildren(parents).ToList();
+
+                    var offsprings = _crossover.MakeChildren(parents);
 
 
                     foreach (var offspring in offsprings)
@@ -60,7 +65,7 @@ namespace SimpleGA.Core
                         if (chromosomesForPopulation.Count > MaxSize) break;
                         chromosomesForPopulation.Add(mutatedSprings ?? offspring);
                     }
-                    
+
                 }
             }
 

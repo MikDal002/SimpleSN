@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Threading;
+using SimpleSN.Core.OtherStuff;
 
 namespace SimpleSN.GUI
 {

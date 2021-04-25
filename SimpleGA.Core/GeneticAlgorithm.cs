@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using SimpleGA.Core.Chromosomes;
+using SimpleGA.Core.Fitnesses;
+using SimpleGA.Core.Populations;
+using SimpleGA.Core.Terminations;
 
 namespace SimpleGA.Core
 {
@@ -32,25 +37,17 @@ namespace SimpleGA.Core
                 if (currentGeneration.Count == 0)
                     throw new ArgumentException("Generation must be bigger than zero!");
                 
-
-                T bestChromosomeInGeneration = null;
-                foreach (T chromosome in currentGeneration)
+                
+                Parallel.ForEach(currentGeneration.Where(d => d.Fitness == null), chromosome =>
                 {
                     chromosome.Fitness = Fitness.Evaluate(chromosome);
                     if (chromosome.Fitness == null) throw new ArgumentException("Generation must be bigger than zero!");
-                    
+                });
+                currentGeneration.BestChromosome = currentGeneration.Max(d => d);
 
-                    if (bestChromosomeInGeneration == null) bestChromosomeInGeneration = chromosome;
-                    else if (bestChromosomeInGeneration.Fitness < chromosome.Fitness)
-                        bestChromosomeInGeneration = chromosome;
-                }
-
-                currentGeneration.BestChromosome = bestChromosomeInGeneration;
-
-                if (BestChromosome == null) BestChromosome = bestChromosomeInGeneration;
-                //else if (bestChromosomeInGeneration!.Fitness > BestChromosome.Fitness)
-                else if (bestChromosomeInGeneration.CompareTo(BestChromosome) > 1)
-                    BestChromosome = bestChromosomeInGeneration;
+                if (BestChromosome == null) BestChromosome = currentGeneration.BestChromosome;
+                else if (currentGeneration.BestChromosome.CompareTo(BestChromosome) > 0)
+                    BestChromosome = currentGeneration.BestChromosome;
 
                 GenerationHasGone?.Invoke(this, currentGeneration);
 

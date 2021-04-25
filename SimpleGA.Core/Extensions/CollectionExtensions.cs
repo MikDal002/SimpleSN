@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SimpleGA.GUI
+namespace SimpleGA.Core.Extensions
 {
     public static class CollectionExtensions
     {

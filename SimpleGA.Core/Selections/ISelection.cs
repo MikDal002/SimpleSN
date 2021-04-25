@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using SimpleGA.Core.Chromosomes;
 
-namespace SimpleGA.Core
+namespace SimpleGA.Core.Selections
 {
     public interface ISelection
     {

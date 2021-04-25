@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace SimpleSN
+namespace SimpleSN.Core
 {
     [Serializable]
     internal class NeuronTiredException : Exception

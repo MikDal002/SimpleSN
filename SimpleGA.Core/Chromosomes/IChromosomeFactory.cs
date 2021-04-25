@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SimpleGA.Core
+namespace SimpleGA.Core.Chromosomes
 {
     public interface IGenableChromosomeFactory <T,E> : IChromosomeFactory<T> where T : IGenableChromosome<E>
     {

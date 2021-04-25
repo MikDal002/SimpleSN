@@ -1,4 +1,4 @@
-﻿namespace SimpleGA.Core
+﻿namespace SimpleGA.Core.Terminations
 {
     public interface ITermination
     {

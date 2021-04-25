@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using SimpleGA.Core.Chromosomes;
 
 namespace SimpleGA.Core
 {

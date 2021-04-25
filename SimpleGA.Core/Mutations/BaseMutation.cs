@@ -1,6 +1,7 @@
 ﻿using System;
+using SimpleGA.Core.Chromosomes;
 
-namespace SimpleGA.Core
+namespace SimpleGA.Core.Mutations
 {
     public abstract class BaseMutation<T> : IMutation<T> where  T : IChromosome
     {

@@ -7,6 +7,15 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using SimpleGA.Core.Chromosomes;
+using SimpleGA.Core.Crossovers;
+using SimpleGA.Core.Extensions;
+using SimpleGA.Core.Fitnesses;
+using SimpleGA.Core.Mutations;
+using SimpleGA.Core.MyProblem;
+using SimpleGA.Core.Populations;
+using SimpleGA.Core.Selections;
+using SimpleGA.Core.Terminations;
 
 namespace SimpleGA.GUI
 {
@@ -82,6 +91,7 @@ namespace SimpleGA.GUI
         TravelerProblemChromosome IChromosomeFactory<TravelerProblemChromosome>.CreateNew()
         {
             if (CitiesFromFile.Count == 0) LoadCitiesFromFile();
+            ++_counter;
             return new TravelerProblemChromosome(CitiesFromFile.Shuffle());
         }
 
@@ -102,9 +112,12 @@ namespace SimpleGA.GUI
             }
         }
 
+        public long _counter = 0;
+
         /// <inheritdoc />
         public TravelerProblemChromosome FromGenes(IList<City> genes)
         {
+            ++_counter;
             return new TravelerProblemChromosome(genes);
         }
 
@@ -117,6 +130,7 @@ namespace SimpleGA.GUI
 
     public class TravelsManFitness : IFitness<TravelerProblemChromosome>
     {
+        
         /// <inheritdoc />
         public double Evaluate(TravelerProblemChromosome chromosome)
         {
@@ -131,7 +145,7 @@ namespace SimpleGA.GUI
 
             chromosome.TotalPath = sum;
 
-            return 1 / sum;
+            return sum;
         }
 
     }
