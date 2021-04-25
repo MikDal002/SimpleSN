@@ -26,6 +26,7 @@ namespace SimpleGA.Core.Solutions.TravelersSalesmanProblem
             int i = 0;
             foreach (var cityRaw in lines.Where(d => !string.IsNullOrWhiteSpace(d)))
             {
+                if (cityRaw.StartsWith("#")) continue;
                 var split = cityRaw.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (split.Length != 2) throw new ArgumentException("There is abnormal amount of points for the city");
                 var city = new City

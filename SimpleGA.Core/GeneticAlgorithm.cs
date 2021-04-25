@@ -40,10 +40,11 @@ namespace SimpleGA.Core
                     throw new ArgumentException("Generation must be bigger than zero!");
 
 
-                Parallel.ForEach(currentGeneration.Where(d => d.Fitness == null), chromosome =>
+                Parallel.ForEach(currentGeneration, chromosome =>
                 {
+                    if (chromosome.Fitness != null) return;
                     chromosome.Fitness = Fitness.Evaluate(chromosome);
-                    if (chromosome.Fitness == null) throw new ArgumentException("Generation must be bigger than zero!");
+                    if (chromosome.Fitness == null) throw new ArgumentException("Fitness must be bigger than zero!");
                 });
                 currentGeneration.BestChromosome = currentGeneration.Max(d => d);
 

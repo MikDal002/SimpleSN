@@ -36,18 +36,20 @@ namespace SimpleGA.Core.Crossovers
             var child1PrimeGenes = parents[0].Genes.Skip(begining).Take(end - begining).ToList();
             var child2PrimeGenes = parents[1].Genes.Skip(begining).Take(end - begining).ToList();
 
-            Func<IEnumerable<E>> parent1FilteredGens = () => parents[0].Genes.Where(d => !child2PrimeGenes.Contains(d));
-            Func<IEnumerable<E>> parent2FilteredGens = () => parents[1].Genes.Where(d => !child1PrimeGenes.Contains(d));
+            var parent1FilteredGens = parents[0].Genes.Where(d => !child2PrimeGenes.Contains(d)).ToList();
+            var parent2FilteredGens = parents[1].Genes.Where(d => !child1PrimeGenes.Contains(d)).ToList();
 
             var child1Genes =
-                parent2FilteredGens().Take(begining)
-                    .Concat(child1PrimeGenes)
-                    .Concat(parent2FilteredGens().Skip(begining).Take(maxCount - (begining + child1PrimeGenes.Count)));
+                parent2FilteredGens.Take(begining)
+                                   .Concat(child1PrimeGenes)
+                                   .Concat(parent2FilteredGens.Skip(begining)
+                                                              .Take(maxCount - (begining + child1PrimeGenes.Count)));
 
             var child2Genes =
-                parent1FilteredGens().Take(begining)
-                    .Concat(child2PrimeGenes)
-                    .Concat(parent1FilteredGens().Skip(begining).Take(maxCount - (begining + child2PrimeGenes.Count)));
+                parent1FilteredGens.Take(begining)
+                                   .Concat(child2PrimeGenes)
+                                   .Concat(parent1FilteredGens.Skip(begining)
+                                                              .Take(maxCount - (begining + child2PrimeGenes.Count)));
 
             yield return _factory.FromGenes(child1Genes.ToList());
             yield return _factory.FromGenes(child2Genes.ToList());

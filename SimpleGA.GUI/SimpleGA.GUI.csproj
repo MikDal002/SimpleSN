@@ -15,6 +15,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="KnapsackData\instances_01_KP.zip">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="KnapsackData\knapPI_1_10000_1000_1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="KnapsackData\knapPI_2_200_1000_1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="SalesManData\P01.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using SimpleGA.Core.Chromosomes;
 using SimpleGA.Core.Crossovers;
 using SimpleGA.Core.Mutations;
@@ -41,33 +43,72 @@ namespace SimpleGA.Core.Populations
             }
             else
             {
+                object locker = new object();
                 // TODO MD 24-04-2021:  This shouldn't be hardcoded!
                 chromosomesForPopulation.Add(_previousGeneration.BestChromosome);
-                for (int i = chromosomesForPopulation.Count; i < MinSize; ++i)
-                {
-                    // ToList jest tymczasowo
-                    var parents = _selection.SelectChromosomes(_previousGeneration, _crossover.RequiredNumberOfParents)
-                        .ToList();
-                    if (parents.Count != _crossover.RequiredNumberOfParents)
+                Parallel.For<List<T>>(chromosomesForPopulation.Count, MinSize, () => new List<T>(),
+                    (i, state, sublist) =>
                     {
-                        Debug.WriteLine(
-                            $"Amount of parents isn't sufficient ({parents.Count} vs {_crossover.RequiredNumberOfParents})!");
-                        continue;
-                    }
+                        try
+                        {
+                            if (chromosomesForPopulation.Count <= MaxSize)
+                                sublist.AddRange(GetChildren());
+                            else
+                            {
+                                Debug.WriteLine("Za dużo dzieciaków, więc nie produkuję nowych.");
+                                state.Stop();
+                            }
 
-                    var offsprings = _crossover.MakeChildren(parents);
-
-
-                    foreach (var offspring in offsprings)
+                            return sublist;
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.WriteLine(e);
+                            throw;
+                        }
+                    },
+                    newKids =>
                     {
-                        var mutatedSprings = _mutation.Mutate(offspring);
-                        if (chromosomesForPopulation.Count > MaxSize) break;
-                        chromosomesForPopulation.Add(mutatedSprings ?? offspring);
+                        lock (locker)
+                        {
+                            foreach (var kid in newKids)
+                            {
+                                if (chromosomesForPopulation.Count <= MaxSize)
+                                    chromosomesForPopulation.Add(kid);
+                                else
+                                    Debug.WriteLine("Za dużo dzieciaków, więc nie dodaję.");
+                            }
+                        }
                     }
-                }
+                );
             }
 
+            Debug.Assert(chromosomesForPopulation.Count >= MinSize);
             return _previousGeneration = new Generation<T>(chromosomesForPopulation);
+        }
+
+        private IEnumerable<T> GetChildren()
+        {
+            var parents = _selection.SelectChromosomes(_previousGeneration, _crossover.RequiredNumberOfParents)
+                                    .ToList();
+            if (parents.Count != _crossover.RequiredNumberOfParents)
+                //Debug.WriteLine($"Amount of parents isn't sufficient ({parents.Count} vs {_crossover.RequiredNumberOfParents})!");
+                yield break;
+
+                IEnumerable<T> offsprings;
+                try { offsprings = _crossover.MakeChildren(parents); }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                    yield break;
+                    //throw;
+                }
+
+                foreach (var offspring in offsprings)
+                {
+                    var mutatedSprings = _mutation.Mutate(offspring);
+                    yield return mutatedSprings ?? offspring;
+                }
         }
     }
 }
