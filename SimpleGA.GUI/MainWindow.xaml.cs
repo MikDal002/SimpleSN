@@ -1,20 +1,15 @@
 ﻿using Newtonsoft.Json;
 using SimpleGA.Core;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using SimpleGA.Core.Chromosomes;
 using SimpleGA.Core.Crossovers;
-using SimpleGA.Core.Extensions;
-using SimpleGA.Core.Fitnesses;
 using SimpleGA.Core.Mutations;
-using SimpleGA.Core.MyProblem;
 using SimpleGA.Core.Populations;
 using SimpleGA.Core.Selections;
+using SimpleGA.Core.Solutions.MyProblem;
+using SimpleGA.Core.Solutions.TravelersSalesmanProblem;
 using SimpleGA.Core.Terminations;
 
 namespace SimpleGA.GUI
@@ -79,74 +74,5 @@ namespace SimpleGA.GUI
             //);
             //worker.Start();
         }
-    }
-
-    public class TravelerProblemFactory : IGenableChromosomeFactory<TravelerProblemChromosome, City>
-    {
-        private string FilePath { get; } = "SalesManData/ATT48.txt"; // Shortest path is 33523
-        //private string FilePath { get; } = "SalesManData/P01.txt"; // Shortest path is 291
-        //private string FilePath { get; } = "SalesManData/ATT48.txt";
-        private List<City> CitiesFromFile { get; } = new List<City>();
-        /// <inheritdoc />
-        TravelerProblemChromosome IChromosomeFactory<TravelerProblemChromosome>.CreateNew()
-        {
-            if (CitiesFromFile.Count == 0) LoadCitiesFromFile();
-            ++_counter;
-            return new TravelerProblemChromosome(CitiesFromFile.Shuffle());
-        }
-
-        private void LoadCitiesFromFile()
-        {
-            var lines = File.ReadAllLines(FilePath);
-            int i = 0;
-            foreach (var cityRaw in lines.Where(d => !string.IsNullOrWhiteSpace(d)))
-            {
-                var split = cityRaw.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                if (split.Length != 2) throw new ArgumentException("There is abnormal amount of points for the city");
-                var city = new City()
-                {
-                    Location = new PointF(float.Parse(split[0]), float.Parse(split[1])),
-                    Name = $"City {++i}"
-                };
-                CitiesFromFile.Add(city);
-            }
-        }
-
-        public long _counter = 0;
-
-        /// <inheritdoc />
-        public TravelerProblemChromosome FromGenes(IList<City> genes)
-        {
-            ++_counter;
-            return new TravelerProblemChromosome(genes);
-        }
-
-        /// <inheritdoc />
-        public City GetGene(int geneNumber)
-        {
-            throw new System.NotImplementedException();
-        }
-    }
-
-    public class TravelsManFitness : IFitness<TravelerProblemChromosome>
-    {
-        
-        /// <inheritdoc />
-        public double Evaluate(TravelerProblemChromosome chromosome)
-        {
-            var cities = chromosome.Genes;
-            var sum = 0.0;
-            for (int i = 0; i < cities.Count - 1; i++)
-            {
-                var first = cities[i].Location;
-                var second = cities[i + 1].Location;
-                sum += Math.Sqrt(Math.Pow(first.X - second.X, 2) + Math.Pow(first.Y - second.Y, 2));
-            }
-
-            chromosome.TotalPath = sum;
-
-            return sum;
-        }
-
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using SimpleGA.Core.Chromosomes;
 
-namespace SimpleGA.Core.MyProblem
+namespace SimpleGA.Core.Solutions.MyProblem
 {
     public class MyProblemChromosomeFactory : IGenableChromosomeFactory<MyProblemChromosome, double>
     {

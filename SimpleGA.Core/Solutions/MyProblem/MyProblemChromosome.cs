@@ -1,74 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using SimpleGA.Core.Chromosomes;
 
-namespace SimpleGA.Core.MyProblem
+namespace SimpleGA.Core.Solutions.MyProblem
 {
-    public class City
-    {
-        public string Name { get; set; }
-        public PointF Location { get; set; }
-
-        /// <inheritdoc />
-        public override bool Equals(object? obj)
-        {
-            if (this == obj) return true;
-            if (obj is City city)
-            {
-                return Equals(city);
-            }
-
-            throw new ArgumentException(nameof(obj));
-        }
-
-        protected bool Equals(City other)
-        {
-            return Location.Equals(other.Location);
-        }
-
-        /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Location);
-        }
-    }
-
-    public class TravelerProblemChromosome : FitnessComparableChromosome, IGenableChromosome<City>
-    {
-        private readonly List<City> _genes;
-
-        public TravelerProblemChromosome(IEnumerable<City> cities)
-        {
-            _genes = cities.ToList();
-        }
-
-        public double TotalPath { get; set; }
-
-        /// <inheritdoc />
-        public IReadOnlyList<City> Genes => _genes;
-
-        /// <inheritdoc />
-        public int CompareTo(object? obj)
-        {
-            return -base.CompareTo(obj);
-        }
-
-        /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            int hash = 1;
-            foreach (var gen in _genes)
-            {
-                hash = HashCode.Combine(hash, gen.GetHashCode());
-            }
-
-            return hash;
-
-        }
-    }
-
     public class MyProblemChromosome : FitnessComparableChromosome, IGenableChromosome<double>
     {
         private readonly List<double> _genes = new List<double>();

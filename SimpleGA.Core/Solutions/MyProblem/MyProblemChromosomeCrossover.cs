@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using SimpleGA.Core.Crossovers;
 
-namespace SimpleGA.Core.MyProblem
+namespace SimpleGA.Core.Solutions.MyProblem
 {
     public class MyProblemChromosomeCrossover : ICrossover<MyProblemChromosome>
     {

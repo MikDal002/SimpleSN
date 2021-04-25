@@ -1,7 +1,7 @@
 ﻿using System;
 using SimpleGA.Core.Fitnesses;
 
-namespace SimpleGA.Core.MyProblem
+namespace SimpleGA.Core.Solutions.MyProblem
 {
     public class MyProblemFitness : IFitness<MyProblemChromosome>
     {
