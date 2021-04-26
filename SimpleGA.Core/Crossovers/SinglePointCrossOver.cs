@@ -1,4 +1,5 @@
-﻿using SimpleGA.Core.Chromosomes;
+﻿using System.Linq;
+using SimpleGA.Core.Chromosomes;
 
 namespace SimpleGA.Core.Crossovers
 {
@@ -7,5 +8,8 @@ namespace SimpleGA.Core.Crossovers
         public SinglePointCrossover(IGenableChromosomeFactory<T, E> factory) : base(1, factory)
         {
         }
+
+        public SinglePointCrossover(int point, IGenableChromosomeFactory<T, E> factory) :
+            base(new[] {point}, factory) { }
     }
 }

@@ -11,11 +11,6 @@ namespace SimpleGA.Core.Tests
 {
     public class Tests
     {
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [Test]
         public void Test1()
         {
@@ -33,6 +28,30 @@ namespace SimpleGA.Core.Tests
                 parent.Genes.Count.Should().Be(firstParentCount,
                     "All chromosomes after Ordered cross over MUST be the same length");
                 foreach(var kid in kids)
+                {
+                    kid.Genes.Should().HaveCount(parent.Genes.Count);
+                    kid.Genes.Should().IntersectWith(parent.Genes);
+                }
+            }
+        }
+
+        [Test]
+        public void Test2()
+        {
+            var factory = new IntArrayOrderedChromosomeFactory();
+            var orderedCrossover = new CyclicOrderedCrossover<IntArrayChromosome, int>(factory);
+
+            var parents = Enumerable.Range(0, orderedCrossover.RequiredNumberOfParents)
+                                    .Select(_ => factory.CreateNew());
+
+            var kids = orderedCrossover.MakeChildren(parents);
+
+            var firstParentCount = parents.First().Genes.Count;
+            foreach (var parent in parents)
+            {
+                parent.Genes.Count.Should().Be(firstParentCount,
+                    "All chromosomes after Ordered cross over MUST be the same length");
+                foreach (var kid in kids)
                 {
                     kid.Genes.Should().HaveCount(parent.Genes.Count);
                     kid.Genes.Should().IntersectWith(parent.Genes);

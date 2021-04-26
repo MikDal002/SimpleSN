@@ -9,11 +9,20 @@ namespace SimpleGA.Core.Crossovers
     {
         private readonly int _amountOfPoints;
         private readonly IGenableChromosomeFactory<T, E> _factory;
+        private List<int> _splitPoints;
 
-        public MultiPointCrossover(int amountOfPoints, IGenableChromosomeFactory<T, E> factory)
+        public MultiPointCrossover(int amountOfRandomPoints, IGenableChromosomeFactory<T, E> factory)
         {
-            _amountOfPoints = amountOfPoints;
+            _amountOfPoints = amountOfRandomPoints;
             _factory = factory;
+        }
+
+        public MultiPointCrossover(IEnumerable<int> corssOversPoints, IGenableChromosomeFactory<T, E> factory)
+        {
+            _factory = factory;
+            _splitPoints = corssOversPoints.ToList();
+            _splitPoints.Sort();
+            _amountOfPoints = _splitPoints.Count;
         }
 
         /// <inheritdoc />
@@ -33,13 +42,16 @@ namespace SimpleGA.Core.Crossovers
             var childGenes2 = new List<E>();
             var random = new Random();
 
-            var splitPoints = new List<int>(_amountOfPoints);
-            for (int j = 0; j < _amountOfPoints; ++j) splitPoints.Add(random.Next(maxCount - 1));
-            splitPoints.Sort();
+            if (_splitPoints == null || _splitPoints.Count == 0)
+            {
+                _splitPoints = new List<int>(_amountOfPoints);
+                for (int j = 0; j < _amountOfPoints; ++j) _splitPoints.Add(random.Next(maxCount - 1));
+                _splitPoints.Sort();
+            }
 
             for (int i = 0; i < maxCount; ++i)
             {
-                int next = splitPoints.Count(d => d >= i) % 2;
+                int next = _splitPoints.Count(d => d >= i) % 2;
                 childGenes1.Add(next == 0 ? list[0].Genes[i] : list[1].Genes[i]);
                 childGenes2.Add(next == 1 ? list[0].Genes[i] : list[1].Genes[i]);
             }

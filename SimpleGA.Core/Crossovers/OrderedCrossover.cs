@@ -7,11 +7,21 @@ namespace SimpleGA.Core.Crossovers
 {
     public class OrderedCrossover<T, E> : ICrossover<T> where T : IGenableChromosome<E>
     {
+        private static readonly Random _random = new();
+        private readonly double _begining;
+        private readonly double _end;
         private readonly IGenableChromosomeFactory<T, E> _factory;
 
-        public OrderedCrossover(IGenableChromosomeFactory<T, E> chromosomeFactory)
+        public OrderedCrossover(IGenableChromosomeFactory<T, E> chromosomeFactory) : this(
+            _random.NextDouble(), _random.NextDouble(), chromosomeFactory)
         {
             _factory = chromosomeFactory;
+        }
+
+        public OrderedCrossover(double begining, double end, IGenableChromosomeFactory<T, E> chromosomeFactory)
+        {
+            _begining = begining;
+            _end = end;
         }
 
         /// <inheritdoc />
@@ -27,11 +37,10 @@ namespace SimpleGA.Core.Crossovers
                 throw new ArgumentException("Different size of genes is not supported here!");
 
             var maxCount = parents[0].Genes.Count;
-            var random = new Random();
 
 
-            var begining = random.Next((maxCount - 1) / 2);
-            var end = random.Next(begining, maxCount - 1);
+            var begining = (int) (maxCount * Math.Min(_begining, _end));
+            var end = (int) (maxCount * Math.Max(_begining, _end));
 
             var child1PrimeGenes = parents[0].Genes.Skip(begining).Take(end - begining).ToList();
             var child2PrimeGenes = parents[1].Genes.Skip(begining).Take(end - begining).ToList();
