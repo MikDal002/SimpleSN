@@ -5,8 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleGA.GUI"
         mc:Ignorable="d" Activated="MainWindow_OnActivated"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+        Title="MainWindow" Height="450" Width="800" x:Name="_this">
+    <StackPanel Orientation="Horizontal">
+        <Label Content="{Binding ElementName=_this, Path=Problem.Value}" />
+        <Label Content="{Binding ElementName=_this,  Path=ExecutedTestes.Value, Mode=OneWay}"/>
+        <Label Content=" z "/>
+        <Label Content="{Binding ElementName=_this,  Path=AllTestesCount.Value}"/>
+    </StackPanel>
 </Window>

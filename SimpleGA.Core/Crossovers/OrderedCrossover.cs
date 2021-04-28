@@ -13,15 +13,13 @@ namespace SimpleGA.Core.Crossovers
         private readonly IGenableChromosomeFactory<T, E> _factory;
 
         public OrderedCrossover(IGenableChromosomeFactory<T, E> chromosomeFactory) : this(
-            _random.NextDouble(), _random.NextDouble(), chromosomeFactory)
-        {
-            _factory = chromosomeFactory;
-        }
+            _random.NextDouble(), _random.NextDouble(), chromosomeFactory) { }
 
         public OrderedCrossover(double begining, double end, IGenableChromosomeFactory<T, E> chromosomeFactory)
         {
             _begining = begining;
             _end = end;
+            _factory = chromosomeFactory;
         }
 
         /// <inheritdoc />

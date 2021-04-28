@@ -2,14 +2,14 @@
 
 namespace SimpleGA.Core.Terminations
 {
-    public class TheSameNeuronWInner : ITermination
+    public class TheSameNeuronWinner : ITermination
     {
         public long AmountLastNeruonWins { get; private set; } = 0;
         private IChromosome _lastKnwonWinner = null;
 
         public long MaxGenerationsCount { get; }
 
-        public TheSameNeuronWInner(long maxGenerationsCount)
+        public TheSameNeuronWinner(long maxGenerationsCount)
         {
             MaxGenerationsCount = maxGenerationsCount;
         }

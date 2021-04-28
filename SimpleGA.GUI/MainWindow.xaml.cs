@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SimpleGA.Core;
 using SimpleGA.Core.Chromosomes;
@@ -18,6 +19,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Reactive.Bindings;
+using Reactive.Bindings.Notifiers;
 
 namespace SimpleGA.GUI
 {
@@ -27,12 +30,13 @@ namespace SimpleGA.GUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindow(string filePath)
         {
+            FilePath = filePath;
             InitializeComponent();
         }
 
-        private double silnia2(int n)
+        private double Silnia2(int n)
         {
             double result = 1;
             for (int i = 1; i <= n; i++) result *= i;
@@ -57,8 +61,7 @@ namespace SimpleGA.GUI
             ga.Termination = new GenerationNumberTermination(1000);
         }
 
-
-        public void ProblemTests<TChrom, TGen, TFactory, TFitness>(double DesiredFitness)
+        public async Task ProblemTests<TChrom, TGen, TFactory, TFitness>(double DesiredFitness)
             where TChrom : class, IGenableChromosome<TGen>
             where TFactory : IGenableChromosomeFactory<TChrom, TGen>, new()
             where TFitness : IFitness<TChrom>, new()
@@ -101,134 +104,108 @@ namespace SimpleGA.GUI
                 () => new GenerationNumberTermination(8000),
                 () => new GenerationNumberTermination(13000),
 
-                () => new TheSameNeuronWInner(100),
-                () => new TheSameNeuronWInner(200),
-                () => new TheSameNeuronWInner(300),
-                () => new TheSameNeuronWInner(500),
-                () => new TheSameNeuronWInner(800),
-                () => new TheSameNeuronWInner(1300),
-                () => new TheSameNeuronWInner(2100),
+                () => new TheSameNeuronWinner(100),
+                () => new TheSameNeuronWinner(200),
+                () => new TheSameNeuronWinner(300),
+                () => new TheSameNeuronWinner(500),
+                () => new TheSameNeuronWinner(800),
+                () => new TheSameNeuronWinner(1300),
+                () => new TheSameNeuronWinner(2100),
             };
 
 
             var populations = new[] {100, 200, 300, 500, 800, 1300};
 
-            var dirinfo = Directory.CreateDirectory("Results");
+            AllTestesCount.Value = selections.Length
+                                   * crossOvers.Length
+                                   * mutations.Count
+                                   * populations.Length
+                                   * terminationFactory.Length;
+            ExecutedTestes.Value = 0;
+            using var file = File.Open(FilePath, FileMode.Append, FileAccess.Write, FileShare.Read);
+            using var sw = new StreamWriter(file);
+            using var writer = new JsonTextWriter(sw);
+            writer.Formatting = Formatting.Indented;
 
-            using (var file = File.OpenWrite(Path.Combine(dirinfo.FullName,
-                $"{DateTime.Now.ToString("yyyy-MM-dd HHmmss")}.json")))
-            using (var sw = new StreamWriter(file))
-            using (var writer = new JsonTextWriter(sw))
+            try
             {
-                try
+                await writer.WriteStartArrayAsync();
+
+                foreach (var selection in selections)
+                foreach (var crossover in crossOvers)
+                foreach (var mutation in mutations)
+                foreach (var population in populations)
+                foreach (var termination in terminationFactory)
                 {
-                    writer.WriteStartArray();
+                    var factory = new TFactory();
+                    var crossOverReal = crossover(factory);
+                    var selectionReal = selection();
+                    var mutationReal = mutation(factory);
+                    var terminationReal = termination();
+                    IChromosome previousWinner = null;
+                    var steps = new List<StepDef>();
 
-                    foreach (var selection in selections)
-                    foreach (var crossover in crossOvers)
-                    foreach (var mutation in mutations)
-                    foreach (var population in populations)
-                    foreach (var termination in terminationFactory)
-                    {
-                        var stopwatch = new Stopwatch();
-                        var factory = new TFactory();
-                            var crossOverReal = crossover(factory);
-                            var selectionReal = selection();
-                            var mutationReal = mutation(factory);
-                            var terminationReal = termination();
-                            IChromosome previousWinner = null;
-                            var steps = new List<StepDef>();
-
-                            var ga = GenericProblem<TChrom, TGen, TFactory, TFitness>(crossOverReal, selectionReal,
-                                mutationReal,
-                                terminationReal, population, population * 2, factory, (sender, chroms) =>
+                    var stopwatch = Stopwatch.StartNew();
+                    var ga = await GenericProblem<TChrom, TGen, TFactory, TFitness>(crossOverReal, selectionReal,
+                        mutationReal,
+                        terminationReal, population, population * 2, factory, (sender, chroms) =>
+                        {
+                            Debug.Write(".");
+                            if (previousWinner == chroms.BestChromosome) return;
+                            previousWinner = chroms.BestChromosome;
+                            steps.Add(
+                                new StepDef
                                 {
-                                    Debug.Write(".");
-                                    if (previousWinner == chroms.BestChromosome) return;
-                                    previousWinner = chroms.BestChromosome;
-                                    steps.Add(
-                                        new StepDef
-                                        {
-                                            Elapse = stopwatch.ElapsedMilliseconds,
-                                            fitness = chroms.BestChromosome.Fitness!.Value,
-                                            generation = (sender as GeneticAlgorithm<TChrom>)!.GenerationsNumber
-                                        });
+                                    Elapse = stopwatch.ElapsedMilliseconds,
+                                    fitness = chroms.BestChromosome.Fitness!.Value,
+                                    generation = (sender as GeneticAlgorithm<TChrom>)!.GenerationsNumber
                                 });
-                            Debug.WriteLine("\r\n Test passed");
+                        });
+                    stopwatch.Stop();
+                    Debug.WriteLine("\r\n Test passed");
 
-                            SaveResult(new Result<TChrom>
-                            {
-                                Population = population,
-                                Termination = terminationReal,
-                                Crossover = crossOverReal,
-                                Selection = selectionReal,
-                                Mutation = mutationReal,
-                                AmountOfGenerations = ga.GenerationsNumber,
-                                WinnerChromosome = ga.BestChromosome,
-                                TotalTimeMs = stopwatch.ElapsedMilliseconds,
-                                TheBestFoundFitness = ga.BestChromosome.Fitness!.Value,
-                                RealTheBestValue = DesiredFitness,
-                                Steps = steps
-                            }, writer);
-                            stopwatch.Stop();
-                    }
+                    ExecutedTestes.Value = ExecutedTestes.Value + 1;
+
+                    SaveResult(new Result<TChrom>
+                    {
+                        Population = population,
+                        Termination = terminationReal,
+                        Crossover = crossOverReal,
+                        Selection = selectionReal,
+                        Mutation = mutationReal,
+                        AmountOfGenerations = ga.GenerationsNumber,
+                        WinnerChromosome = ga.BestChromosome,
+                        TotalTimeMs = stopwatch.ElapsedMilliseconds,
+                        TheBestFoundFitness = ga.BestChromosome.Fitness!.Value,
+                        RealTheBestValue = DesiredFitness,
+                        Steps = steps
+                    }, writer);
                 }
-                finally { writer.WriteEndArray(); }
             }
+            finally { await writer.WriteEndArrayAsync(); }
         }
 
-        private int Counter { get; set; } = 0;
-        private object _locker = new();
-        private readonly JsonSerializer _serializer = new JsonSerializer();
+        public ReactiveProperty<long> AllTestesCount { get; } = new();
+        public ReactiveProperty<int> ExecutedTestes { get; } = new(0);
+        public ReactiveProperty<string> Problem { get; } = new("");
+        private readonly JsonSerializer _serializer = new();
+
+
+        public string FilePath { set; get; }
+
 
         private void SaveResult<TChrom>(Result<TChrom> p0, JsonWriter writer) where TChrom : class, IChromosome
         {
             Debug.WriteLine(JsonConvert.SerializeObject(p0));
-            Task.Run(() =>
-            {
-                lock (_locker)
-                {
-                    JObject obj = JObject.FromObject(p0, _serializer);
-                    obj.WriteTo(writer);
-                    writer.Flush();
-                }
-            });
-        }
 
-        public class Result<TChrom> where TChrom : class, IChromosome
-        {
-            public string SelectionName => Selection.GetType().Name;
-            public ISelection Selection { get; set; }
-            public string CrossoverName => Crossover.GetType().Name;
-            public ICrossover<TChrom> Crossover { get; set; }
-            public string MutationName => Mutation.GetType().Name;
-            public IMutation<TChrom> Mutation { get; set; }
-            public string TerminationName => Termination.GetType().Name;
-            public ITermination Termination { get; set; }
-            public int Population { get; set; }
-
-            public TChrom WinnerChromosome { get; set; }
-            public int AmountOfGenerations { get; set; }
-
-            public long TimeFromBeginningMs { get; set; }
-
-            public double RealTheBestValue { get; set; }
-            public double TheBestFoundFitness { get; set; }
-            public long TotalTimeMs { get; set; }
-
-
-            public List<StepDef> Steps { get; set; } = new List<StepDef>();
-        }
-
-        public class StepDef
-        {
-            public int generation { get; set; }
-            public long Elapse { get; set; }
-            public double fitness { get; set; }
+            JObject obj = JObject.FromObject(p0, _serializer);
+            obj.WriteTo(writer);
+            writer.Flush();
         }
 
 
-        private GeneticAlgorithm<TChrom> GenericProblem<TChrom, TGen, TFactory, TFitness>(ICrossover<TChrom> crossover,
+        private async Task<GeneticAlgorithm<TChrom>> GenericProblem<TChrom, TGen, TFactory, TFitness>(
+            ICrossover<TChrom> crossover,
             ISelection selection,
             IMutation<TChrom> mutation,
             ITermination termination,
@@ -252,129 +229,32 @@ namespace SimpleGA.GUI
             ga.Termination = termination;
             ga.GenerationHasGone += generationHandler;
             Debug.WriteLine("GA running...");
-            ga.Start();
+            await Task.Run(() => ga.Start());
 
             Debug.WriteLine("\r\nBest solution found has {0}.", ga.BestChromosome.Fitness);
             return ga;
         }
 
-        private void KnapsacknProblem(int generationCount = 10000, double crossOverBeginning = 0.1,
-            double crossOverEnd = 0.9,
-            double mutationProbability = 0.1, int amountOfSwapsInMutation = 1, int populationMin = 1000,
-            int populationMax = 2000)
+        private bool _isRunning = false;
+
+        private async void MainWindow_OnActivated(object? sender, EventArgs e)
         {
-            var selection = new RouletteSelection();
-            var chromosomeFactory = new KnapsackProblemFactory();
-            //var crossover = new OrderedCrossover<KnapsackProblemChromosome, Insert>(crossOverBeginning, crossOverEnd, chromosomeFactory);
-            var crossover = new CyclicOrderedCrossover<KnapsackProblemChromosome, Insert>(3, chromosomeFactory);
-            var fitness = new KnapsackFitness();
-            var mutation = new SwapMutation<KnapsackProblemChromosome, Insert>(chromosomeFactory)
-            {
-                MutationThreshold = mutationProbability,
-                AmountOfSwaps = amountOfSwapsInMutation
-            };
-            var population =
-                new Population<KnapsackProblemChromosome>(populationMin, populationMax, chromosomeFactory, crossover,
-                    mutation,
-                    selection);
-            var ga = new GeneticAlgorithm<KnapsackProblemChromosome>(population, fitness);
-            var termination = new GenerationNumberTermination(generationCount);
-            ga.Termination = termination;
+            if (_isRunning) return;
+            _isRunning = true;
+            Problem.Value = "";
 
-            //IChromosome previousWinner = null;
-            //ga.GenerationHasGone += (sender, generation) =>
-            //{
-            //    if (generation.BestChromosome == previousWinner)
-            //    {
-            //        Debug.Write(".");
-            //        return;
-            //    }
+            var dirInfo = Directory.CreateDirectory("Results");
 
-            //    Debug.WriteLine("");
-            //    previousWinner = generation.BestChromosome;
-            //    Debug.WriteLine(
-            //        $"Generację {(sender as IGeneticAlgorithm).GenerationsNumber} wygrał {generation.BestChromosome} z profitem {generation.BestChromosome.TotalProfit}.");
-            //    var winnerWeigth = 0.0;
-            //    Debug.WriteLine(JsonConvert.SerializeObject(generation.BestChromosome.Genes.TakeWhile(d =>
-            //    {
-            //        winnerWeigth += d.Weight;
-            //        return winnerWeigth < generation.BestChromosome.MaxWeight;
-            //    }).Select(d => d.Name)));
-            //    // mutation.MutationThreshold =
-            //    //     ga.GenerationsNumber / (double) termination.MaxGenerationsCount + 0.1;
-            //    // mutation.AmountOfSwaps = (ga.GenerationsNumber + 1) % 100;
-            //};
+            Problem.Value = "Travelsman";
+            FilePath = Path.Combine(dirInfo.FullName,
+                $"{Problem.Value}_{DateTime.Now.ToString("yyyy-MM-dd HHmmss")}.json");
+            await ProblemTests<TravelerProblemChromosome, City, TravelerProblemFactory, TravelsManFitness>(33523);
 
-            //Debug.WriteLine("GA running...");
-            //ga.Start();
-            //
-            //Debug.WriteLine("\r\nBest solution found has {0} profit ({1}).", ga.BestChromosome.Fitness,
-            //    ga.BestChromosome.TotalProfit);
-            ////Debug.WriteLine($"Wygenerowano {chromosomeFactory.Counter} chromosomów vs {silnia2(chromosomeFactory.AllInserts.Count)} wszystkich możliwości.");
-            //
-            //var winnerWeigth = 0.0;
-            //Debug.WriteLine(JsonConvert.SerializeObject(ga.BestChromosome.Genes.TakeWhile(d =>
-            //{
-            //    winnerWeigth += d.Weight;
-            //    return winnerWeigth < ga.BestChromosome.MaxWeight;
-            //}).Select(d => d.Name)));
-        }
-
-        private void TravelsmanProblem()
-        {
-            var selection = new RouletteSelection();
-            var chromosomeFactory = new TravelerProblemFactory();
-            var crossover = new OrderedCrossover<TravelerProblemChromosome, City>(chromosomeFactory);
-            var fitness = new TravelsManFitness();
-            var mutation = new SwapMutation<TravelerProblemChromosome, City>(chromosomeFactory);
-            var population =
-                new Population<TravelerProblemChromosome>(1000, 2000, chromosomeFactory, crossover, mutation,
-                    selection);
-            var ga = new GeneticAlgorithm<TravelerProblemChromosome>(population, fitness);
-            var termination = new GenerationNumberTermination(10000);
-            ga.Termination = termination;
-
-            IChromosome previousWinner = null;
-            ga.GenerationHasGone += (sender, generation) =>
-            {
-                if (generation.BestChromosome == previousWinner)
-                {
-                    Debug.Write(".");
-                    return;
-                }
-
-                Debug.WriteLine("");
-                previousWinner = generation.BestChromosome;
-                Debug.WriteLine(
-                    $"Generację {(sender as IGeneticAlgorithm).GenerationsNumber} wygrał {generation.BestChromosome} z ścieżką {generation.BestChromosome.TotalPath}.");
-                Debug.WriteLine(JsonConvert.SerializeObject(generation.BestChromosome.Genes.Select(d => d.Name)));
-                // mutation.MutationThreshold =
-                //     ga.GenerationsNumber / (double) termination.MaxGenerationsCount + 0.1;
-                // mutation.AmountOfSwaps = (ga.GenerationsNumber + 1) % 100;
-            };
-
-            Debug.WriteLine("GA running...");
-            ga.Start();
-
-            Debug.WriteLine("\r\nBest solution found has {0} path ({1}).", ga.BestChromosome.Fitness,
-                ga.BestChromosome.TotalPath);
-            Debug.WriteLine(
-                $"Wygenerowano {chromosomeFactory.Counter} chromosomów vs {silnia2(chromosomeFactory.AllCities.Count)} wszystkich możliwości.");
-            Debug.WriteLine(JsonConvert.SerializeObject(ga.BestChromosome.Genes.Select(d => d.Name)));
-        }
-
-        private void MainWindow_OnActivated(object? sender, EventArgs e)
-        {
-            // FInd the best solution for \sqrt((x1-x2)^2 + (y1 - y2)^)
-            //var worker = new Thread(() =>
-            {
-                // SimpleFunctionOptimization();
-                // TravelsmanProblem();
-                // KnapsacknProblem();
-                ProblemTests<KnapsackProblemChromosome, Insert, KnapsackProblemFactory, KnapsackFitness>(1634);
-            }
-            //);
-            //worker.Start();
+            Problem.Value = "Knapsack";
+            FilePath = Path.Combine(dirInfo.FullName,
+                $"{Problem.Value}_{DateTime.Now.ToString("yyyy-MM-dd HHmmss")}.json");
+            await ProblemTests<KnapsackProblemChromosome, Insert, KnapsackProblemFactory, KnapsackFitness>(1634);
+            _isRunning = false;
         }
     }
 }

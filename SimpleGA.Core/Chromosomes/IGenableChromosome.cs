@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace SimpleGA.Core.Chromosomes
 {
     public interface IGenableChromosome<T> : IChromosome
     {
-        public IReadOnlyList<T> Genes { get; }
+        [JsonIgnore] public IReadOnlyList<T> Genes { get; }
     }
 }
