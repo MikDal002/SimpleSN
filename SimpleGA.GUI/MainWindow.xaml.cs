@@ -30,9 +30,9 @@ namespace SimpleGA.GUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow(string filePath)
+        public MainWindow()
         {
-            FilePath = filePath;
+            FilePath = string.Empty;
             InitializeComponent();
         }
 

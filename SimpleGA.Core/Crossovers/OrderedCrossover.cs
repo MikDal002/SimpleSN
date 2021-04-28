@@ -8,8 +8,9 @@ namespace SimpleGA.Core.Crossovers
     public class OrderedCrossover<T, E> : ICrossover<T> where T : IGenableChromosome<E>
     {
         private static readonly Random _random = new();
-        private readonly double _begining;
-        private readonly double _end;
+        public double Begining { get; }
+        public double End { get; }
+
         private readonly IGenableChromosomeFactory<T, E> _factory;
 
         public OrderedCrossover(IGenableChromosomeFactory<T, E> chromosomeFactory) : this(
@@ -17,8 +18,8 @@ namespace SimpleGA.Core.Crossovers
 
         public OrderedCrossover(double begining, double end, IGenableChromosomeFactory<T, E> chromosomeFactory)
         {
-            _begining = begining;
-            _end = end;
+            Begining = begining;
+            End = end;
             _factory = chromosomeFactory;
         }
 
@@ -37,8 +38,8 @@ namespace SimpleGA.Core.Crossovers
             var maxCount = parents[0].Genes.Count;
 
 
-            var begining = (int) (maxCount * Math.Min(_begining, _end));
-            var end = (int) (maxCount * Math.Max(_begining, _end));
+            var begining = (int) (maxCount * Math.Min(Begining, End));
+            var end = (int) (maxCount * Math.Max(Begining, End));
 
             var child1PrimeGenes = parents[0].Genes.Skip(begining).Take(end - begining).ToList();
             var child2PrimeGenes = parents[1].Genes.Skip(begining).Take(end - begining).ToList();

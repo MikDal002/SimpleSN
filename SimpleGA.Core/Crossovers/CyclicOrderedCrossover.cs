@@ -8,7 +8,7 @@ namespace SimpleGA.Core.Crossovers
     public class CyclicOrderedCrossover<T, E> : ICrossover<T> where T : IGenableChromosome<E>
     {
         private static readonly Random _random = new();
-        private readonly int? _length;
+        public int? Length { get; }
         private readonly IGenableChromosomeFactory<T, E> _factory;
 
         public CyclicOrderedCrossover(IGenableChromosomeFactory<T, E> chromosomeFactory) : this(null,
@@ -16,7 +16,7 @@ namespace SimpleGA.Core.Crossovers
 
         public CyclicOrderedCrossover(int? length, IGenableChromosomeFactory<T, E> factory)
         {
-            _length = length;
+            Length = length;
             _factory = factory;
         }
 
@@ -33,7 +33,7 @@ namespace SimpleGA.Core.Crossovers
                 throw new ArgumentException("Different size of genes is not supported here!");
 
             var maxCount = parents[0].Genes.Count;
-            var cycleLength = _length ?? _random.Next(maxCount);
+            var cycleLength = Length ?? _random.Next(maxCount);
 
             if (cycleLength >= maxCount)
                 throw new InvalidOperationException("Length of cycle is lower than length of chromosome!");
