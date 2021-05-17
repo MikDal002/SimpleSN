@@ -1,10 +1,168 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using SimpleGA.Core.Chromosomes;
+using SimpleGA.Core.Extensions;
+using SimpleGA.Core.Fitnesses;
 
 namespace SimpleGA.Core.Solutions.MyProblem
 {
+    /// <summary>
+    ///     http://www.geatbx.com/ver_3_5/fcnfun7.html
+    /// </summary>
+    public class SchwefelChromosomeFitness : IFitness<SimpleChromosome>
+    {
+        /// <inheritdoc />
+        public double Evaluate(SimpleChromosome chromosome)
+        {
+            if (chromosome.Genes.Count != 64) throw new Exception();
+
+            var values = new[]
+            {
+                BitConverter.ToSingle(chromosome.Genes.Take(32).ToBytes()),
+                BitConverter.ToSingle(chromosome.Genes.Skip(32).ToBytes()),
+            };
+
+            double sum = 0;
+            for (int i = 0; i < values.Length; i++) sum += -values[i] * Math.Sin(Math.Sqrt(Math.Abs(values[i])));
+            //var result = 418.9829 * values.Length + sum;
+            var result = sum;
+            return result;
+        }
+    }
+
+    /// <summary>
+    ///     https://www.sfu.ca/~ssurjano/mccorm.html
+    /// </summary>
+    public class MCCORMICKChromosomeFitness : IFitness<SimpleChromosome>
+    {
+        /// <inheritdoc />
+        public double Evaluate(SimpleChromosome chromosome)
+        {
+            if (chromosome.Genes.Count != 64) throw new Exception();
+
+
+            var val1 = BitConverter.ToSingle(chromosome.Genes.Take(32).ToBytes());
+            var val2 = BitConverter.ToSingle(chromosome.Genes.Skip(32).ToBytes());
+
+
+            return Math.Sin(val1 + val2) + Math.Pow(val1 - val2, 2) - 1.5 * val1 + 2.5 * val2 + 1;
+        }
+    }
+
+    public class BitChromosomeFactory : IGenableChromosomeFactory<SimpleChromosome, bool>
+    {
+        private readonly int _length;
+        private readonly Random _random;
+
+        public BitChromosomeFactory(int length)
+        {
+            _length = length;
+            _random = new Random();
+        }
+
+        /// <inheritdoc />
+        public virtual SimpleChromosome CreateNew()
+        {
+            return new SimpleChromosome(Enumerable.Range(0, _length).Select(d => GetGene(d)).ToList());
+        }
+
+        /// <inheritdoc />
+        public virtual SimpleChromosome FromGenes(IList<bool> genes)
+        {
+            if (genes.Count != _length) throw new Exception();
+            return new SimpleChromosome(genes.ToList());
+        }
+
+        /// <inheritdoc />
+        public virtual bool GetGene(int geneNumber)
+        {
+            return _random.Next() % 2 == 0;
+        }
+    }
+
+
+    public class FloatChromosomeFactory : BitChromosomeFactory
+    {
+        public int Length { get; }
+        public float Max { get; set; } = 500;
+        public float Min { get; set; } = -500;
+
+
+        public FloatChromosomeFactory() : this(2) { }
+
+        /// <inheritdoc />
+        public FloatChromosomeFactory(int length) : base(length * 32)
+        {
+            Length = length;
+        }
+
+        /// <inheritdoc />
+        public override SimpleChromosome CreateNew()
+        {
+            var random = new Random();
+            List<float> gensDoubles = new List<float>();
+            for (int i = 0; i < Length; ++i)
+            {
+                var value = random.NextDouble() * (Max - Min) + Min;
+                gensDoubles.Add((float) value);
+            }
+
+            var bytes = gensDoubles.SelectMany(d => BitConverter.GetBytes(d)).ToArray();
+            var bitArray = new BitArray(bytes);
+
+            var retList = new List<bool>();
+            foreach (var bit in bitArray)
+            {
+                var boolean = (bool) bit;
+                retList.Add(boolean);
+            }
+
+            return base.FromGenes(retList);
+        }
+
+        /// <inheritdoc />
+        public override SimpleChromosome FromGenes(IList<bool> genes)
+        {
+            var bytes = genes.ToBytes();
+            if (bytes.Length % 4 != 0) throw new Exception("Amount of bytes must be divisible by 4!");
+
+            for (int i = 0; i < bytes.Length; ++i)
+            {
+                var dbl = BitConverter.ToSingle(genes.ToBytes());
+                if (dbl < Min || dbl > Max) CreateNew();
+            }
+
+            return base.FromGenes(genes);
+        }
+    }
+
+    public class SimpleChromosome : FitnessComparableChromosome, IGenableChromosome<bool>
+    {
+        public SimpleChromosome(List<bool> genes)
+        {
+            Genes = genes;
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 1;
+            foreach (var gen in Genes) hash = HashCode.Combine(hash, gen.GetHashCode());
+
+            return hash;
+        }
+
+        public IReadOnlyList<bool> Genes { get; }
+
+
+        /// <inheritdoc />
+        public int CompareTo(object? obj)
+        {
+            return -base.CompareTo(obj);
+        }
+    }
+
     public class MyProblemChromosome : FitnessComparableChromosome, IGenableChromosome<double>
     {
         private readonly List<double> _genes = new List<double>();
@@ -46,9 +204,7 @@ namespace SimpleGA.Core.Solutions.MyProblem
             x2,
             y1,
             y2
-        })
-        {
-        }
+        }) { }
 
         /// <inheritdoc />
         public IChromosome FromGenes(IList<double> genes)

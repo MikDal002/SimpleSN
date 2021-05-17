@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using SimpleGA.Core.Chromosomes;
 
@@ -14,12 +15,15 @@ namespace SimpleGA.Core.Selections
         public IEnumerable<T> SelectChromosomes<T>(Generation<T> previousGeneration, int requiredNumberOfParents)
             where T : IChromosome
         {
+            var min = previousGeneration.Min();
             if (IsReversed == null)
             {
-                var min = previousGeneration.Min();
                 var max = previousGeneration.Max();
                 IsReversed = max.Fitness < min.Fitness;
+                HasMinus = min.Fitness < 0 || max.Fitness < 0;
             }
+            else if (!HasMinus) HasMinus = previousGeneration.Any(d => d.Fitness!.Value < 0);
+
 
             var sumOfFitnesse = 0.0;
 
@@ -28,10 +32,9 @@ namespace SimpleGA.Core.Selections
                 if (!chrom.Fitness.HasValue)
                     throw new ArgumentException("Chromosome doesn't have fitness calculated!");
 
-                sumOfFitnesse += chrom.Fitness.Value;
+                sumOfFitnesse += GetFitness(chrom.Fitness.Value, min.Fitness!.Value);
             }
 
-            if (IsReversed == true) sumOfFitnesse = 1.0 / sumOfFitnesse;
 
             var parentThresholds = new List<double>(requiredNumberOfParents);
 
@@ -45,7 +48,7 @@ namespace SimpleGA.Core.Selections
             var selectionProgress = 0.0;
             foreach (var chrom in previousGeneration)
             {
-                selectionProgress += IsReversed == true ? 1.0 / chrom.Fitness!.Value : chrom.Fitness!.Value;
+                selectionProgress += GetFitness(chrom.Fitness!.Value, min.Fitness!.Value);
                 if (minimumParentThreshold > selectionProgress) continue;
 
                 parentThresholds.RemoveAt(0);
@@ -54,6 +57,25 @@ namespace SimpleGA.Core.Selections
                 if (parentThresholds.Count == 0) yield break;
                 minimumParentThreshold = parentThresholds[0];
             }
+
+            if (parentThresholds.Count == 0) Debug.WriteLine("Nie wszystko się odstrzeliło...");
+        }
+
+        public bool HasMinus { get; set; }
+
+        private double GetFitness(double fitness, double currentMin = double.NaN)
+        {
+            if (IsReversed!.Value && HasMinus)
+            {
+                if (double.IsNaN(currentMin)) throw new ArgumentException(nameof(currentMin));
+                var retValue = -fitness + Math.Abs(currentMin);
+                if (retValue < 0) Debug.WriteLine("Coś nie bangla");
+                return retValue;
+            }
+
+            if (IsReversed!.Value)
+                return 1.0 / fitness;
+            return fitness;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using SimpleGA.Core.Chromosomes;
 
@@ -7,10 +8,12 @@ namespace SimpleGA.Core.Crossovers
 {
     public class UniformCrossover<T, E> : ICrossover<T> where T : IGenableChromosome<E>
     {
+        public double Ratio { get; }
         private readonly IGenableChromosomeFactory<T, E> _factory;
 
-        public UniformCrossover(IGenableChromosomeFactory<T, E> factory)
+        public UniformCrossover(IGenableChromosomeFactory<T, E> factory, double ratio)
         {
+            Ratio = ratio;
             _factory = factory;
         }
 
@@ -29,12 +32,16 @@ namespace SimpleGA.Core.Crossovers
             var maxCount = list[0].Genes.Count;
             var childGenes1 = new List<E>();
             var childGenes2 = new List<E>();
-            var random = new Random();
+            double firstParent = 0;
+            double secondParent = 0;
             for (int i = 0; i < maxCount; ++i)
             {
-                int next = random.Next(1);
-                childGenes1.Add(next == 0 ? list[0].Genes[i] : list[1].Genes[i]);
-                childGenes2.Add(next == 1 ? list[0].Genes[i] : list[1].Genes[i]);
+                bool selectFirst = secondParent + firstParent == 0
+                                   || firstParent / (secondParent + firstParent) < Ratio;
+                if (selectFirst) firstParent++;
+                else secondParent++;
+                childGenes2.Add(selectFirst ? list[0].Genes[i] : list[1].Genes[i]);
+                childGenes1.Add(!selectFirst ? list[0].Genes[i] : list[1].Genes[i]);
             }
 
             yield return _factory.FromGenes(childGenes1);

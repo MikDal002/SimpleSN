@@ -1,10 +1,11 @@
-﻿using SimpleGA.Core.Chromosomes;
+﻿using Newtonsoft.Json;
+using SimpleGA.Core.Chromosomes;
 
 namespace SimpleGA.Core.Terminations
 {
     public class TheSameNeuronWinner : ITermination
     {
-        public long AmountLastNeruonWins { get; private set; } = 0;
+        [JsonIgnore] public long AmountLastNeruonWins { get; private set; } = 0;
         private IChromosome _lastKnwonWinner = null;
 
         public long MaxGenerationsCount { get; }

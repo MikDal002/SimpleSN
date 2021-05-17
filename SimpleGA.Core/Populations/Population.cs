@@ -46,18 +46,21 @@ namespace SimpleGA.Core.Populations
                 object locker = new object();
                 // TODO MD 24-04-2021:  This shouldn't be hardcoded!
                 chromosomesForPopulation.Add(_previousGeneration.BestChromosome);
+                if (_previousGeneration.Count == 1) Debug.WriteLine("I'm only one!");
                 Parallel.For<List<T>>(chromosomesForPopulation.Count, MinSize, () => new List<T>(),
                     (i, state, sublist) =>
                     {
                         try
                         {
-                            if (chromosomesForPopulation.Count <= MaxSize)
-                                sublist.AddRange(GetChildren());
-                            else
+                            if (chromosomesForPopulation.Count > MaxSize)
                             {
                                 Debug.WriteLine("Za dużo dzieciaków, więc nie produkuję nowych.");
                                 state.Stop();
                             }
+
+                            var kids = GetChildren().ToList();
+                            //if (kids.Count == 0) Debug.WriteLine("Czemu nie masz dzieci?");
+                            sublist.AddRange(kids);
 
                             return sublist;
                         }
@@ -71,7 +74,8 @@ namespace SimpleGA.Core.Populations
                     {
                         lock (locker)
                         {
-                            foreach (var kid in newKids)
+                            //if (newKids.Count == 0) Debug.WriteLine("Ups!");
+                            foreach (var kid in newKids /*.Where(d => d != null)*/)
                             {
                                 if (chromosomesForPopulation.Count <= MaxSize)
                                     chromosomesForPopulation.Add(kid);
@@ -83,6 +87,9 @@ namespace SimpleGA.Core.Populations
                 );
             }
 
+            //             for (int i = MinSize - chromosomesForPopulation.Count; i > 0; --i)
+            //                 chromosomesForPopulation.Add(_adamFactory.CreateNew());
+
             Debug.Assert(chromosomesForPopulation.Count >= MinSize);
             return _previousGeneration = new Generation<T>(chromosomesForPopulation);
         }
@@ -92,10 +99,12 @@ namespace SimpleGA.Core.Populations
             var parents = _selection.SelectChromosomes(_previousGeneration, _crossover.RequiredNumberOfParents)
                                     .ToList();
             if (parents.Count != _crossover.RequiredNumberOfParents)
+            {
                 //Debug.WriteLine($"Amount of parents isn't sufficient ({parents.Count} vs {_crossover.RequiredNumberOfParents})!");
                 yield break;
+            }
 
-                IEnumerable<T> offsprings;
+            IEnumerable<T> offsprings;
                 try { offsprings = _crossover.MakeChildren(parents); }
                 catch (Exception e)
                 {
