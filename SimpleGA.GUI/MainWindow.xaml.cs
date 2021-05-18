@@ -122,30 +122,30 @@ namespace SimpleGA.GUI
                 new SwapMutation<TChrom, TGen>(factory) {MutationThreshold = mutationThreshold, AmountOfSwaps = swaps};
 
             var mutations = new List<Func<TFactory, IMutation<TChrom>>>();
-            foreach (var swaps in new[] {1, 2, 3, 5, 8, 13})
-            foreach (var threshold in new[] {0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9})
+            foreach (var swaps in new[] {1, /*2,*/ 3, /*5,*/ 8, /*13*/})
+            foreach (var threshold in new[] {0, /*0.1,*/ 0.2, /*0.3,*/ 0.4, 0.5, /*0.6,*/ 0.7, /*0.8,*/ 0.9})
                 mutations.Add(factory => mutationFactory(swaps, threshold, factory));
 
             var terminationFactory = new Func<ITermination>[]
             {
                 () => new GenerationNumberTermination(1000),
-                () => new GenerationNumberTermination(2000),
+                //() => new GenerationNumberTermination(2000),
                 () => new GenerationNumberTermination(3000),
-                () => new GenerationNumberTermination(5000),
+                //() => new GenerationNumberTermination(5000),
                 () => new GenerationNumberTermination(8000),
-                () => new GenerationNumberTermination(13000),
+                //() => new GenerationNumberTermination(13000),
 
                 () => new TheSameNeuronWinner(100),
-                () => new TheSameNeuronWinner(200),
+                //() => new TheSameNeuronWinner(200),
                 () => new TheSameNeuronWinner(300),
-                () => new TheSameNeuronWinner(500),
+                //() => new TheSameNeuronWinner(500),
                 () => new TheSameNeuronWinner(800),
-                () => new TheSameNeuronWinner(1300),
+                //() => new TheSameNeuronWinner(1300),
                 () => new TheSameNeuronWinner(2100),
             };
 
 
-            var populations = new[] {100, 200, 300, 500, 800, 1300};
+            var populations = new[] {100, /*200,*/ 300, /*500,*/ 800, /*1300 */};
 
             AllTestesCount.Value = selections.Length
                                    * crossOvers.Count
@@ -283,18 +283,18 @@ namespace SimpleGA.GUI
 
             var problems = new[]
             {
+                new ProblemDef("Schwefela",
+                    async () =>
+                        await ProblemTests<SimpleChromosome, bool, FloatChromosomeFactory, SchwefelChromosomeFitness>(
+                            -837.96577453946134,
+                            ReadDoneThings<SimpleChromosome>(dirInfo), true)),
+
                 new ProblemDef("MCCORMICK",
                     async () =>
                         await ProblemTests<SimpleChromosome, bool, FloatChromosomeFactory, MCCORMICKChromosomeFitness>(
                             -1.9133,
                             ReadDoneThings<SimpleChromosome>(dirInfo), true,
                             () => new FloatChromosomeFactory {Min = -4, Max = 4})),
-
-                new ProblemDef("Schwefela",
-                    async () =>
-                        await ProblemTests<SimpleChromosome, bool, FloatChromosomeFactory, SchwefelChromosomeFitness>(
-                            -837.96577453946134,
-                            ReadDoneThings<SimpleChromosome>(dirInfo), true)),
 
                 new ProblemDef("Knapsack", async ()
                     => await ProblemTests<KnapsackProblemChromosome, Insert, KnapsackProblemFactory, KnapsackFitness>(
