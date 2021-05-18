@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -23,6 +24,42 @@ namespace SimpleGA.Core.Tests
 {
     public class Tests
     {
+        [Test]
+        [Repeat(100)]
+        public void TestOfBitConversion()
+        {
+            var Length = 2;
+            var Min = -500;
+            var Max = 500;
+            var random = new Random();
+
+            List<float> gensDoubles = new List<float>();
+            for (int i = 0; i < Length; ++i)
+            {
+                var value = random.NextDouble() * (Max - Min) + Min;
+                gensDoubles.Add((float) value);
+            }
+
+            var bytes = gensDoubles.SelectMany(d => BitConverter.GetBytes(d)).ToArray();
+            var bitArray = new BitArray(bytes);
+
+            var retList = new List<bool>();
+            foreach (var bit in bitArray)
+            {
+                var boolean = (bool) bit;
+                retList.Add(boolean);
+            }
+
+            var value1 = BitConverter.ToSingle(retList.Take(32).ToBytes());
+            var value2 = BitConverter.ToSingle(retList.Skip(32).Take(32).ToBytes());
+
+            value1.Should().Be(gensDoubles[0]);
+            value2.Should().Be(gensDoubles[1]);
+
+            value1.Should().BeInRange(Min, Max);
+            value2.Should().BeInRange(Min, Max);
+        }
+
         public void CheckIfAreEqual<TChrom, TGen, TFactory, TFitness>()
             where TChrom : class, IGenableChromosome<TGen>
             where TFactory : IGenableChromosomeFactory<TChrom, TGen>, new()
