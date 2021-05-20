@@ -26,6 +26,8 @@ namespace SimpleGA.Core.Solutions.MyProblem
                 return double.PositiveInfinity;
             }
 
+            if (result < -2) Debug.WriteLine("hohoho!");
+
             return result;
         }
     }

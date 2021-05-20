@@ -283,18 +283,19 @@ namespace SimpleGA.GUI
 
             var problems = new[]
             {
+                new ProblemDef("MCCORMICK",
+                    async () =>
+                        await ProblemTests<SimpleChromosome, bool, FloatChromosomeFactory, MCCORMICKChromosomeFitness>(
+                            -1.9133,
+                            ReadDoneThings<SimpleChromosome>(dirInfo), true,
+                            () => new FloatChromosomeFactory {Min = -3, Max = 3})),
+
                 new ProblemDef("Schwefela",
                     async () =>
                         await ProblemTests<SimpleChromosome, bool, FloatChromosomeFactory, SchwefelChromosomeFitness>(
                             -837.96577453946134,
                             ReadDoneThings<SimpleChromosome>(dirInfo), true)),
 
-                new ProblemDef("MCCORMICK",
-                    async () =>
-                        await ProblemTests<SimpleChromosome, bool, FloatChromosomeFactory, MCCORMICKChromosomeFitness>(
-                            -1.9133,
-                            ReadDoneThings<SimpleChromosome>(dirInfo), true,
-                            () => new FloatChromosomeFactory {Min = -4, Max = 4})),
 
                 new ProblemDef("Knapsack", async ()
                     => await ProblemTests<KnapsackProblemChromosome, Insert, KnapsackProblemFactory, KnapsackFitness>(
